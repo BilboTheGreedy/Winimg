@@ -1,0 +1,6 @@
+- name: Download git-client
+  win_get_url:
+    url: https://github.com/git-for-windows/git/releases/download/v2.20.1.windows.1/Git-2.20.1-64-bit.exe
+    dest: C:\Windows\Temp
+- name: install git-client
+  raw: 'C:\Windows\Temp\Git-2.20.1-64-bit.exe /SILENT /COMPONENTS="icons,ext\reg\shellhere,assoc,assoc_sh"'

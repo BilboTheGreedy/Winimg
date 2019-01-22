@@ -1,0 +1,8 @@
+[hyperv]
+192.168.0.100
+
+[hyperv:vars]
+ansible_user=administrator
+ansible_password=Pa$$w0rd
+ansible_connection=winrm
+ansible_winrm_server_cert_validation=ignore

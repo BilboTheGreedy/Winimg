@@ -1,0 +1,9 @@
+---
+- name: Copy nxlog.conf to server
+  win_copy:
+    src: build/{{ os_version }}/secondary.iso
+    dest: 'C:\packer\build' # the destination server
+  become: yes
+  become_method: runas
+  become_user: .\administrator #use -k to enter this password
+  become_pass: Pa$$w0rd

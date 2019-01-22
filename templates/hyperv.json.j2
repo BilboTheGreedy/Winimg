@@ -1,0 +1,63 @@
+{
+    "builders": [
+      {
+        "vm_name":"{{user `vm_name`}}",
+        "type": "hyperv-iso",
+        "disk_size": 40000,
+        "secondary_iso_images": [
+          "build/{{user `os_version`}}/secondary.iso"
+        ],
+        "boot_command": [
+          "<esc><enter><wait2><esc><enter>"
+        ],
+        "iso_url": "{{ user `iso_url`}}",
+        "iso_checksum_type": "{{ user `iso_checksum_type`}}",
+        "iso_checksum": "{{ user `iso_checksum`}}",
+        "communicator":"winrm",
+        "winrm_username": "{{ user `username`}}",
+        "winrm_password": "{{ user `password`}}",
+        "winrm_timeout" : "4h",
+        "shutdown_timeout": "60m",
+        "shutdown_command": "schtasks.exe /Run /TN \"packer-shutdown\"",
+        "ram_size": 2048,
+        "cpu": 6,
+        "generation": 2,
+        "switch_name":"{{ user `switch`}}"
+      }
+    ],
+    
+    "provisioners": [
+      {
+        "type": "powershell",
+         "elevated_user":"{{ user `username`}}",
+         "elevated_password":"{{ user `password`}}",
+        "scripts": [
+         "{{template_dir}}/scripts/common/set-proxy.ps1",
+         "{{template_dir}}/scripts/common/cloudbase-install.ps1"
+
+        ]
+      },
+      {
+        "type": "windows-update"
+      },   
+      {
+        "type": "powershell",
+        "scripts": [
+          "{{template_dir}}/scripts/common/optimize.ps1",
+          "{{template_dir}}/scripts/common/set-proxy.ps1",
+          "{{template_dir}}/scripts/common/setsetupcomplete.ps1"          
+        ]
+      }
+    ],
+    "variables": {
+      "vm_name":"windows-2016-standard",
+      "os_version": "win2016std",
+      "username": "Administrator",
+      "password": "Pa$$W0rd",
+      "iso_url": "C:\\Users\\Danie\\Downloads\\files\\en_windows_server_2016_x64_dvd_9718492.iso",
+      "iso_checksum":"E02D2E482B0F3DAB915435E9040C13B4",
+      "iso_checksum_type":"md5",
+      "secondary_isos": "",
+      "switch": "NATSwitch"
+  }
+}

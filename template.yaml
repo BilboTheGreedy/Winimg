@@ -1,0 +1,11 @@
+---
+- name: template
+  hosts: hyperv
+  gather_facts: no
+  vars_files:
+    - vars/autounattend_setup.yml
+  roles:
+#    - role: prepare-build
+    - role: test
+      
+    
