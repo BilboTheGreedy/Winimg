@@ -1,6 +1,70 @@
-- name: Download git-client
-  win_get_url:
-    url: https://github.com/git-for-windows/git/releases/download/v2.20.1.windows.1/Git-2.20.1-64-bit.exe
-    dest: C:\Windows\Temp
-- name: install git-client
-  raw: 'C:\Windows\Temp\Git-2.20.1-64-bit.exe /SILENT /COMPONENTS="icons,ext\reg\shellhere,assoc,assoc_sh"'
+# - name: get list of isos
+#   set_fact:
+#     os_img: "{{windows_iso[os_version]| first}}"
+
+# - name: Create VM
+#   win_shell: | 
+#     New-VHD -Path C:\test.vhdx -Dynamic -SizeBytes 30GB | Out-Null
+#     New-VM -Name test -MemoryStartupBytes 2048MB -Generation 2 -SwitchName NATSwitch -VHDPath C:\test.vhdx | Out-Null
+#     Add-VMDvdDrive -VMName test -ControllerNumber 0 -ControllerLocation 1 | Out-Null
+#     Set-VMDvdDrive -VMName test -ControllerNumber 0 -ControllerLocation 1 -Path C:\iso\en_windows_server_2016_x64_dvd_9718492.iso | Out-Null
+#     Add-VMDvdDrive -VMName test -ControllerNumber 0 -ControllerLocation 2 | Out-Null
+#     Set-VMDvdDrive -VMName test -ControllerNumber 0 -ControllerLocation 2 -Path C:\packer\build\win2016std\secondary.iso | Out-Null
+#     Start-VM test | ConvertTo-Json -Depth 1
+#   register: vm
+
+# - name: Wait 10 sec for VM to boot
+#   wait_for: timeout=10
+#   delegate_to: localhost
+
+# - name: Type boot command
+#   win_shell: | 
+#     $VMName = "test"
+#     $VMCS = Get-WmiObject -Namespace root\virtualization\v2 -Class Msvm_ComputerSystem -Filter “ElementName='$($VMName)'”
+#     $keyboard = $VMCS.GetRelated("Msvm_Keyboard")
+#     $keyboard.TypeKey(0x1B) | out-null
+#     sleep -Milliseconds 100
+#     $keyboard.TypeKey(0x0D) | out-null
+#     sleep -Seconds 1
+#     $keyboard.TypeKey(0x1B) | out-null
+#     sleep -Milliseconds 100
+#     $keyboard.TypeKey(0x0D) | out-null
+
+# - name: test
+#   debug:
+#     var: vm
+
+# - name: Get VM IP
+#   win_shell: (Get-VM test | Select -ExpandProperty NetworkAdapters | Select IPAddresses).IPAddresses[0] |ConvertTo-Json -Depth 1
+#   until: result.stdout.find("192.168.0") != -1
+#   retries: 30
+#   delay: 60
+#   register: result
+#   ignore_errors: true
+
+# - name: test
+#   debug:
+#     var: result.stdout_lines
+# - name: Verify IP address
+#   assert:  
+#     that: "{{ result.stdout_lines | ipaddr('address') }}" 
+#   always_run: yes
+
+- name: Set Windows Update Task
+  win_shell: |
+    $secpasswd = ConvertTo-SecureString 'Pa$$W0rd' -AsPlainText -Force
+    $cred = New-Object System.Management.Automation.PSCredential ("administrator", $secpasswd)
+    invoke-command -Credential $cred -computername 192.168.0.4 -Scriptblock {schtasks /create /RU "NT AUTHORITY\SYSTEM" /tn "WindowsUpdate" /tr "Powershell.exe -file C:\windows\temp\update.ps1" /sc onevent /ec system /mo *[system/eventid=9999] /RL HIGHEST} -AsJob
+    invoke-command -Credential $cred -computername 192.168.0.4 -Scriptblock {schtasks.exe /Run /TN "WindowsUpdate"}
+
+- name: Set Windows Update Task
+  win_shell: |
+    $secpasswd = ConvertTo-SecureString 'Pa$$W0rd' -AsPlainText -Force
+    $cred = New-Object System.Management.Automation.PSCredential ("administrator", $secpasswd)
+    invoke-command -Credential $cred -computername 192.168.0.4 -Scriptblock {schtasks /create /RU "NT AUTHORITY\SYSTEM" /tn "WindowsUpdate" /tr "Powershell.exe -file C:\windows\temp\update.ps1" /sc onevent /ec system /mo *[system/eventid=9999] /RL HIGHEST} -AsJob
+    invoke-command -Credential $cred -computername 192.168.0.4 -Scriptblock {cat $env:SystemRoot\Temp\win-updates.log} | select-string "There are no applicable updates" | select Matches | ConvertTo-Json -Depth 1
+  until: result.stdout.find("There are no applicable updates") != -1
+  retries: 120
+  delay: 60
+  register: result
+  ignore_errors: true

@@ -4,8 +4,12 @@
   gather_facts: no
   vars_files:
     - vars/autounattend_setup.yml
+    - vars/windows_iso.yml
   roles:
-#    - role: prepare-build
-    - role: test
+#    - role: prepare-host
+#    - role: prepare-packer
+#    - role: windows-iso
+    - role: build-image
+#    - role: test
       
     

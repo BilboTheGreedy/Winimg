@@ -1,0 +1,15 @@
+- name: Clone Packer Config
+  win_shell: if (!(Test-Path -Path C:\packer)) {git clone https://github.com/BilboTheGreedy/test C:\packer}
+- name: Download Packer
+  win_get_url:
+    url: https://releases.hashicorp.com/packer/1.3.3/packer_1.3.3_windows_amd64.zip
+    dest: C:\packer
+- name: Download Windows Update plugin
+  win_get_url:
+    url: https://github.com/rgl/packer-provisioner-windows-update/releases/download/v0.6.1/packer-provisioner-windows-update-windows.zip
+    dest: C:\packer
+- name: Expand Archives
+  win_shell: |
+    Expand-Archive C:\packer\packer_1.3.3_windows_amd64.zip -DestinationPath c:\packer
+    Expand-Archive c:\packer\packer-provisioner-windows-update-windows.zip -DestinationPath c:\packer
+    

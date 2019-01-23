@@ -1,0 +1,13 @@
+- name: get list of isos
+  set_fact:
+    list_iso: "{{ windows_iso.win2012r2 }} + {{ windows_iso.win2016 }}"
+- name: Create directory structure
+  win_file:
+    path: C:\iso
+    state: directory
+- name: Download windows iso(s)
+  win_get_url:
+    url: "{{http_fileserver}}{{ item }}"
+    dest: C:\iso\{{item}}
+  loop: "{{ list_iso }}"
+

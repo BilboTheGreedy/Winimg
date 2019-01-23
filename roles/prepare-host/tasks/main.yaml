@@ -1,0 +1,50 @@
+- name: Download git-client
+  win_get_url:
+    url: https://github.com/git-for-windows/git/releases/download/v2.20.1.windows.1/Git-2.20.1-64-bit.exe
+    dest: C:\Windows\Temp
+- name: install git-client
+  raw: 'C:\Windows\Temp\Git-2.20.1-64-bit.exe /SILENT /COMPONENTS="icons,ext\reg\shellhere,assoc,assoc_sh"'
+- name: Install Hyper-v
+  win_feature:
+    include_management_tools: yes
+    include_sub_features: yes    
+    name: Hyper-v
+    state: present
+- name: Instal DHCP
+  win_feature:
+    include_management_tools: yes
+    include_sub_features: yes    
+    name: DHCP
+    state: present
+- name: "Rebooting"
+  win_reboot:
+    reboot_timeout_sec: 1800
+    connect_timeout_sec: 1800
+- name: Wait 600 seconds for target connection to become reachable/usable
+  wait_for_connection:
+    delay: 60
+    timeout: 600
+- name: Configure DHCP Server
+  win_shell: |
+    Set-ItemProperty –Path registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\ServerManager\Roles\12 –Name ConfigurationState –Value 2
+    Add-DhcpServerv4Scope -name "NATScope" -StartRange 192.168.0.2 -EndRange 192.168.0.200 -SubnetMask 255.255.255.0 -State Active
+    Set-DhcpServerv4OptionValue -OptionID 3 -Value 192.168.0.1 -ScopeID 192.168.0.0
+    Set-DhcpServerv4OptionValue -DnsServer 192.168.1.1
+- name: Configure Internal Network
+  win_shell: |
+    New-VMSwitch -SwitchName "NATSwitch" -SwitchType Internal
+    New-NetIPAddress -IPAddress 192.168.0.1 -PrefixLength 24 -InterfaceAlias "vEthernet (NATSwitch)"
+    New-NetNAT -Name "NATNetwork" -InternalIPInterfaceAddressPrefix  192.168.0.0/24
+- name: Get PS Modules
+  win_shell: |
+    winrm s winrm/config/client '@{TrustedHosts="*"}'
+    Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
+    Set-PSRepository -Name "PSGallery" -InstallationPolicy Trusted
+    Install-Module PSWindowsUpdate -Confirm:$false
+
+- name: Windows Update
+  win_shell: |
+    $secpasswd = ConvertTo-SecureString 'Pa$$W0rd' -AsPlainText -Force
+    $mycreds = New-Object System.Management.Automation.PSCredential ("administrator", $secpasswd)
+    invoke-command -Credential $mycreds -computername 192.168.0.4 -Scriptblock {C:\update.ps1}
+    
