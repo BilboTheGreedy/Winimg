@@ -1,39 +1,39 @@
-# - name: get list of isos
-#   set_fact:
-#     os_img: "{{windows_iso[os_version]| first}}"
+- name: get list of isos
+  set_fact:
+    os_img: "{{windows_iso[os_version]| first}}"
 
-# - name: Create VM
-#   win_shell: | 
-#     New-VHD -Path C:\{{os_version}}{{os_edition}}.vhdx -Dynamic -SizeBytes 30GB | Out-Null
-#     New-VM -Name {{os_version}}{{os_edition}} -MemoryStartupBytes 2048MB -Generation 2 -SwitchName NATSwitch -VHDPath C:\{{os_version}}{{os_edition}}.vhdx | Out-Null
-#     Set-VM -Name {{os_version}}{{os_edition}} -ProcessorCount 2
-#     Add-VMDvdDrive -VMName {{os_version}}{{os_edition}} -ControllerNumber 0 -ControllerLocation 1 | Out-Null
-#     Set-VMDvdDrive -VMName {{os_version}}{{os_edition}} -ControllerNumber 0 -ControllerLocation 1 -Path C:\iso\{{os_img}} | Out-Null
-#     Add-VMDvdDrive -VMName {{os_version}}{{os_edition}} -ControllerNumber 0 -ControllerLocation 2 | Out-Null
-#     Set-VMDvdDrive -VMName {{os_version}}{{os_edition}} -ControllerNumber 0 -ControllerLocation 2 -Path C:\packer\build\{{os_version}}{{os_edition}}\secondary.iso | Out-Null
-#     Start-VM {{os_version}}{{os_edition}} | ConvertTo-Json -Depth 1
-#   register: vm
+- name: Create VM
+  win_shell: | 
+    New-VHD -Path C:\{{os_version}}{{os_edition}}.vhdx -Dynamic -SizeBytes 30GB | Out-Null
+    New-VM -Name {{os_version}}{{os_edition}} -MemoryStartupBytes 2048MB -Generation 2 -SwitchName NATSwitch -VHDPath C:\{{os_version}}{{os_edition}}.vhdx | Out-Null
+    Set-VM -Name {{os_version}}{{os_edition}} -ProcessorCount 2
+    Add-VMDvdDrive -VMName {{os_version}}{{os_edition}} -ControllerNumber 0 -ControllerLocation 1 | Out-Null
+    Set-VMDvdDrive -VMName {{os_version}}{{os_edition}} -ControllerNumber 0 -ControllerLocation 1 -Path C:\iso\{{os_img}} | Out-Null
+    Add-VMDvdDrive -VMName {{os_version}}{{os_edition}} -ControllerNumber 0 -ControllerLocation 2 | Out-Null
+    Set-VMDvdDrive -VMName {{os_version}}{{os_edition}} -ControllerNumber 0 -ControllerLocation 2 -Path C:\packer\build\{{os_version}}{{os_edition}}\secondary.iso | Out-Null
+    Start-VM {{os_version}}{{os_edition}} | ConvertTo-Json -Depth 1
+  register: vm
 
-# - name: Wait 10 sec for VM to boot
-#   wait_for: timeout=10
-#   delegate_to: localhost
+- name: Wait 10 sec for VM to boot
+  wait_for: timeout=10
+  delegate_to: localhost
 
-# - name: Type boot command
-#   win_shell: | 
-#     $VMName = "{{os_version}}{{os_edition}}"
-#     $VMCS = Get-WmiObject -Namespace root\virtualization\v2 -Class Msvm_ComputerSystem -Filter “ElementName='$($VMName)'”
-#     $keyboard = $VMCS.GetRelated("Msvm_Keyboard")
-#     $keyboard.TypeKey(0x1B) | out-null
-#     sleep -Milliseconds 100
-#     $keyboard.TypeKey(0x0D) | out-null
-#     sleep -Seconds 1
-#     $keyboard.TypeKey(0x1B) | out-null
-#     sleep -Milliseconds 100
-#     $keyboard.TypeKey(0x0D) | out-null
+- name: Type boot command
+  win_shell: | 
+    $VMName = "{{os_version}}{{os_edition}}"
+    $VMCS = Get-WmiObject -Namespace root\virtualization\v2 -Class Msvm_ComputerSystem -Filter “ElementName='$($VMName)'”
+    $keyboard = $VMCS.GetRelated("Msvm_Keyboard")
+    $keyboard.TypeKey(0x1B) | out-null
+    sleep -Milliseconds 100
+    $keyboard.TypeKey(0x0D) | out-null
+    sleep -Seconds 1
+    $keyboard.TypeKey(0x1B) | out-null
+    sleep -Milliseconds 100
+    $keyboard.TypeKey(0x0D) | out-null
 
-# - name: test
-#   debug:
-#     var: vm
+- name: test
+  debug:
+    var: vm
 
 - name: Get VM IP
   win_shell: (Get-VM {{os_version}}{{os_edition}} | Select -ExpandProperty NetworkAdapters | Select IPAddresses).IPAddresses[0]
@@ -49,17 +49,16 @@
   debug: 
     msg: "ip: {{ vm_ip }}"
 
-# - name: Wait 60 sec for WinRS to be ready
-#   wait_for: timeout=60
-#   delegate_to: localhost
+- name: Wait 60 sec for WinRS to be ready
+  wait_for: timeout=60
+  delegate_to: localhost
 
 - name: Running Windows Update... (Long Running)
   win_shell: |
-     $ErrorActionPreference = "SilentlyContinue"
      $secpasswd = ConvertTo-SecureString '{{AdministratorPassword}}' -AsPlainText -Force
      $cred = New-Object System.Management.Automation.PSCredential ("administrator", $secpasswd)
      Import-Module -Force C:\packer\scripts\modules\RemoteWindowsUpdate.psm1
-     do {$result = Invoke-WindowsUpdate -ComputerName {{ vm_ip }} -AutoReboot -Cred $mycreds}while($result -eq $false)
+     Invoke-WindowsUpdate -ComputerName {{vm_ip}} -AutoReboot -Cred $cred
   become: yes
   become_method: runas
   vars:

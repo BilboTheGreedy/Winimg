@@ -1,7 +1,7 @@
 
 # Import-Module -Verbose -Force RemoteWindowsUpdate.psm1
 # Invoke-WindowsUpdate -AsJob -AutoReboot -ComputerName -Cred PSCredential
-$ErrorActionPreference = "SilentlyContinue"
+
 $InitScript = {
     # Windows Update(Microsoft Update)
     Function Install-WindowsUpdate {
@@ -9,7 +9,7 @@ $InitScript = {
             [Parameter(Position=1,Mandatory=$False)]
             [switch]$ListOnly
         )
-        $ErrorActionPreference = "SilentlyContinue"
+        $ErrorActionPreference = "Stop"
 
         $updateSession = New-Object -ComObject Microsoft.Update.Session
         $searcher = $updateSession.CreateUpdateSearcher()
@@ -118,7 +118,7 @@ $RemoteWindowsUpdate = {
         [PSCredential]$Cred
     )
 
-    $ErrorActionPreference = "SilentlyContinue"
+    $ErrorActionPreference = "Stop"
     
     Set-Location $using:pwd
 
@@ -130,7 +130,7 @@ $RemoteWindowsUpdate = {
 
     $AvailableUpdates = Invoke-Command -ComputerName $ComputerName -ScriptBlock ${Function:Install-WindowsUpdate} -ArgumentList $True  -Credential $Cred
 
-    $FilePath = "RemoteWindowsUpdate_{0}_{1}.txt" -f $ComputerName,(Get-Date -f "yyyyMMdd")
+    $FilePath = "C:\windows\temp\RemoteWindowsUpdate_{0}_{1}.txt" -f $ComputerName,(Get-Date -f "yyyyMMdd")
     if ($AvailableUpdates) {
         $updates = $AvailableUpdates | Select-Object @{L="KB";E={$_.KBArticleIds -join ","}},Title,LastDeploymentChangeTime
         $updates | ConvertTo-Csv -NTI | Out-File -Encoding Default -FilePath $FilePath -Force
