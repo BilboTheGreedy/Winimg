@@ -75,7 +75,7 @@ $InitScript = {
 
         $ScriptBlock = Invoke-Expression $Script
 
-        $TaskPath = "\Microsoft\Windows\PowerShell\ScheduledJobs\"
+        $TaskPath = "\"
         $DefinitionName = "RemoteWindowsUpdate"
 
         $Job = Get-ScheduledJob -Name $DefinitionName -ErrorAction "SilentlyContinue"
