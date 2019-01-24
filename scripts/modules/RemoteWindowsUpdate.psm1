@@ -122,13 +122,13 @@ $RemoteWindowsUpdate = {
     
     Set-Location $using:pwd
 
-    $RebootRequired = Invoke-Command -Authentication Credssp -ComputerName $ComputerName -ScriptBlock ${Function:Install-RemoteWindowsUpdate} -ArgumentList ("{" + ${Function:Install-WindowsUpdate}.ToString() + "}") -Credential $Cred
+    $RebootRequired = Invoke-Command -ComputerName $ComputerName -ScriptBlock ${Function:Install-RemoteWindowsUpdate} -ArgumentList ("{" + ${Function:Install-WindowsUpdate}.ToString() + "}") -Credential $Cred
 
     if ($RebootRequired -and $AutoReboot) {
         Restart-Computer $ComputerName -Wait -Force -Credential $Cred
     }
 
-    $AvailableUpdates = Invoke-Command -Authentication Credssp -ComputerName $ComputerName -ScriptBlock ${Function:Install-WindowsUpdate} -ArgumentList $True  -Credential $Cred
+    $AvailableUpdates = Invoke-Command -ComputerName $ComputerName -ScriptBlock ${Function:Install-WindowsUpdate} -ArgumentList $True  -Credential $Cred
 
     $FilePath = "RemoteWindowsUpdate_{0}_{1}.txt" -f $ComputerName,(Get-Date -f "yyyyMMdd")
     if ($AvailableUpdates) {

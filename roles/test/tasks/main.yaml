@@ -56,3 +56,8 @@
      $cred = New-Object System.Management.Automation.PSCredential ("administrator", $secpasswd)
      Import-Module -Force C:\packer\scripts\modules\RemoteWindowsUpdate.psm1
      Invoke-WindowsUpdate -ComputerName {{vm_ip}} -AutoReboot -Cred $cred
+  become: yes
+  become_method: runas
+  vars:
+    ansible_become_user: '{{ ansible_user }}'
+    ansible_become_pass: '{{ ansible_password }}'
