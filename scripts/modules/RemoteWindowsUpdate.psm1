@@ -1,7 +1,7 @@
 
 # Import-Module -Verbose -Force RemoteWindowsUpdate.psm1
 # Invoke-WindowsUpdate -AsJob -AutoReboot -ComputerName -Cred PSCredential
-
+$ErrorActionPreference = "SilentlyContinue"
 $InitScript = {
     # Windows Update(Microsoft Update)
     Function Install-WindowsUpdate {
@@ -9,7 +9,7 @@ $InitScript = {
             [Parameter(Position=1,Mandatory=$False)]
             [switch]$ListOnly
         )
-        $ErrorActionPreference = "Stop"
+        $ErrorActionPreference = "SilentlyContinue"
 
         $updateSession = New-Object -ComObject Microsoft.Update.Session
         $searcher = $updateSession.CreateUpdateSearcher()
@@ -118,7 +118,7 @@ $RemoteWindowsUpdate = {
         [PSCredential]$Cred
     )
 
-    $ErrorActionPreference = "Stop"
+    $ErrorActionPreference = "SilentlyContinue"
     
     Set-Location $using:pwd
 
