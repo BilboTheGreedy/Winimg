@@ -134,11 +134,11 @@ $RemoteWindowsUpdate = {
     if ($AvailableUpdates) {
         $updates = $AvailableUpdates | Select-Object @{L="KB";E={$_.KBArticleIds -join ","}},Title,LastDeploymentChangeTime
         $updates | ConvertTo-Csv -NTI | Out-File -Encoding Default -FilePath $FilePath -Force
-        throw "$ComputerName Update Uncomplete"
+        return $False
     } else {
         $hotfix = Get-HotFix -ComputerName $ComputerName | Sort-Object InstalledOn
         $hotfix | ConvertTo-Csv -NTI | Out-File -Encoding Default -FilePath $FilePath -Force
-        Write-OutPut "$ComputerName Update Complete"
+        return $true
     }
 }
 
