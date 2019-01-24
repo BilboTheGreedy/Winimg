@@ -41,10 +41,3 @@
     Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
     Set-PSRepository -Name "PSGallery" -InstallationPolicy Trusted
     Install-Module PSWindowsUpdate -Confirm:$false
-
-- name: Windows Update
-  win_shell: |
-    $secpasswd = ConvertTo-SecureString 'Pa$$W0rd' -AsPlainText -Force
-    $mycreds = New-Object System.Management.Automation.PSCredential ("administrator", $secpasswd)
-    invoke-command -Credential $mycreds -computername 192.168.0.4 -Scriptblock {C:\update.ps1}
-    

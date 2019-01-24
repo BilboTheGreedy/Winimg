@@ -16,7 +16,6 @@ $connections | ForEach-Object {
 
 Restart-Service -Name WinRM
 
-Write-Log -message "enabling RDP"
 $rdp_wmi = Get-CimInstance -ClassName Win32_TerminalServiceSetting -Namespace root\CIMV2\TerminalServices
 $rdp_enable = $rdp_wmi | Invoke-CimMethod -MethodName SetAllowTSConnections -Arguments @{ AllowTSConnections = 1; ModifyFirewallException = 1 }
 if ($rdp_enable.ReturnValue -ne 0) {
@@ -25,7 +24,6 @@ if ($rdp_enable.ReturnValue -ne 0) {
     throw $error_message
 }
 
-Write-Log -message "enabling NLA authentication for RDP"
 $nla_wmi = Get-CimInstance -ClassName Win32_TSGeneralSetting -Namespace root\CIMV2\TerminalServices
 $nla_wmi | Invoke-CimMethod -MethodName SetUserAuthenticationRequired -Arguments @{ UserAuthenticationRequired = 1 } | Out-Null
 $nla_wmi = Get-CimInstance -ClassName Win32_TSGeneralSetting -Namespace root\CIMV2\TerminalServices
