@@ -1,6 +1,6 @@
 
 # Import-Module -Verbose -Force RemoteWindowsUpdate.psm1
-# Invoke-WindowsUpdate -AsJob -AutoReboot -ComputerName 
+# Invoke-WindowsUpdate -AsJob -AutoReboot -ComputerName -Cred PSCredential
 
 $InitScript = {
     # Windows Update(Microsoft Update)
@@ -82,7 +82,7 @@ $InitScript = {
         if ($Job) {
             $task = Get-ScheduledTask -TaskPath $TaskPath -TaskName $DefinitionName
             if ($task.state -eq "Running") {
-                throw "Windows Updating..."
+                "Windows Updating..."
             }
             Unregister-ScheduledJob -Name $DefinitionName
         }
@@ -122,13 +122,13 @@ $RemoteWindowsUpdate = {
     
     Set-Location $using:pwd
 
-    $RebootRequired = Invoke-Command -ComputerName $ComputerName -ScriptBlock ${Function:Install-RemoteWindowsUpdate} -ArgumentList ("{" + ${Function:Install-WindowsUpdate}.ToString() + "}") -Credential $Cred
+    $RebootRequired = Invoke-Command -Authentication Credssp -ComputerName $ComputerName -ScriptBlock ${Function:Install-RemoteWindowsUpdate} -ArgumentList ("{" + ${Function:Install-WindowsUpdate}.ToString() + "}") -Credential $Cred
 
     if ($RebootRequired -and $AutoReboot) {
         Restart-Computer $ComputerName -Wait -Force -Credential $Cred
     }
 
-    $AvailableUpdates = Invoke-Command -ComputerName $ComputerName -ScriptBlock ${Function:Install-WindowsUpdate} -ArgumentList $True  -Credential $Cred
+    $AvailableUpdates = Invoke-Command -Authentication Credssp -ComputerName $ComputerName -ScriptBlock ${Function:Install-WindowsUpdate} -ArgumentList $True  -Credential $Cred
 
     $FilePath = "RemoteWindowsUpdate_{0}_{1}.txt" -f $ComputerName,(Get-Date -f "yyyyMMdd")
     if ($AvailableUpdates) {
@@ -159,7 +159,7 @@ Function Invoke-WindowsUpdate {
         [PSCredential]$Cred
     )
     if ($AsJob) {
-        Start-Job -Name $ComputerName -InitializationScript $InitScript -ScriptBlock $RemoteWindowsUpdate -ArgumentList $ComputerName,$AutoReboot,$ListOnly,$Cred
+        Start-Job -Name $ComputerName -InitializationScript $InitScript -ScriptBlock $RemoteWindowsUpdate -ArgumentList $ComputerName,$AutoReboot,$ListOnly,$Cred 
     } else {
         Start-Job -Name $ComputerName -InitializationScript $InitScript -ScriptBlock $RemoteWindowsUpdate -ArgumentList $ComputerName,$AutoReboot,$ListOnly,$Cred  | Wait-Job | Receive-Job -AutoRemoveJob -Wait
     }
