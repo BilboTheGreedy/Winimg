@@ -6,7 +6,7 @@
   win_shell: | 
     New-VHD -Path C:\{{os_version}}{{os_edition}}.vhdx -Dynamic -SizeBytes 30GB | Out-Null
     New-VM -Name {{os_version}}{{os_edition}} -MemoryStartupBytes 2048MB -Generation 2 -SwitchName NATSwitch -VHDPath C:\{{os_version}}{{os_edition}}.vhdx | Out-Null
-    Set-VM -Name {{os_version}}{{os_edition}} -ProcessorCount 2
+    Set-VM -Name {{os_version}}{{os_edition}} -ProcessorCount 4
     Add-VMDvdDrive -VMName {{os_version}}{{os_edition}} -ControllerNumber 0 -ControllerLocation 1 | Out-Null
     Set-VMDvdDrive -VMName {{os_version}}{{os_edition}} -ControllerNumber 0 -ControllerLocation 1 -Path C:\iso\{{os_img}} | Out-Null
     Add-VMDvdDrive -VMName {{os_version}}{{os_edition}} -ControllerNumber 0 -ControllerLocation 2 | Out-Null
@@ -58,7 +58,12 @@
      $secpasswd = ConvertTo-SecureString '{{AdministratorPassword}}' -AsPlainText -Force
      $cred = New-Object System.Management.Automation.PSCredential ("administrator", $secpasswd)
      Import-Module -Force C:\packer\scripts\modules\RemoteWindowsUpdate.psm1
-     do {$result = Invoke-WindowsUpdate -ComputerName {{ vm_ip }} -AutoReboot -Cred $cred -ErrorAction SilentlyContinue}while($result -eq $false)
+     Invoke-WindowsUpdate -ComputerName {{ vm_ip }} -AutoReboot -Cred $cred -ErrorAction SilentlyContinue | ConvertTo-Json -Depth 1
+  until: winup.stdout.find("true") != -1
+  retries: 30
+  delay: 60
+  register: winup
+  ignore_errors: true
   become: yes
   become_method: runas
   vars:
