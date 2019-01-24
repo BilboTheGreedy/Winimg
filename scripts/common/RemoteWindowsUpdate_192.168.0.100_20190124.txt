@@ -1,0 +1,4 @@
+"KB","Title","LastDeploymentChangeTime"
+"4465659","2018-11 Update for Windows Server 2016 for x64-based Systems (KB4465659)","11/13/2018 0:00:00"
+"4091664","2018-10 Update for Windows Server 2016 for x64-based Systems (KB4091664)","1/8/2019 0:00:00"
+"4480977","2019-01 Cumulative Update for Windows Server 2016 for x64-based Systems (KB4480977)","1/17/2019 0:00:00"
