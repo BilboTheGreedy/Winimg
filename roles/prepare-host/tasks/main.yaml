@@ -6,14 +6,14 @@
   raw: 'C:\Windows\Temp\Git-2.20.1-64-bit.exe /SILENT /COMPONENTS="icons,ext\reg\shellhere,assoc,assoc_sh"'
 - name: Install Hyper-v
   win_feature:
-    include_management_tools: yes
-    include_sub_features: yes    
+    include_management_tools: "yes"
+    include_sub_features: "yes"    
     name: Hyper-v
     state: present
 - name: Instal DHCP
   win_feature:
-    include_management_tools: yes
-    include_sub_features: yes    
+    include_management_tools: "yes"
+    include_sub_features: "yes"    
     name: DHCP
     state: present
 - name: "Rebooting"
@@ -22,8 +22,8 @@
     connect_timeout_sec: 1800
 - name: Wait 600 seconds for target connection to become reachable/usable
   wait_for_connection:
-    delay: 60
-    timeout: 600
+    delay: "60"
+    timeout: "600"
 - name: Configure DHCP Server
   win_shell: |
     Set-ItemProperty –Path registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\ServerManager\Roles\12 –Name ConfigurationState –Value 2

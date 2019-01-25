@@ -2,8 +2,70 @@
   set_fact:
     os_img: "{{windows_iso[os_version]| first}}"
 
-- name: Run Packer
+- name: Create VM
+  win_shell: | 
+    New-VHD -Path {{OutputPath}}{{os_version}}{{os_edition}}.vhdx -Dynamic -SizeBytes 30GB | Out-Null
+    New-VM -Name {{os_version}}{{os_edition}} -MemoryStartupBytes 2048MB -Generation 2 -SwitchName NATSwitch -VHDPath {{OutputPath}}{{os_version}}{{os_edition}}.vhdx | Out-Null
+    Set-VM -Name {{os_version}}{{os_edition}} -ProcessorCount 4
+    Add-VMDvdDrive -VMName {{os_version}}{{os_edition}} -ControllerNumber 0 -ControllerLocation 1 | Out-Null
+    Set-VMDvdDrive -VMName {{os_version}}{{os_edition}} -ControllerNumber 0 -ControllerLocation 1 -Path {{ISOPath}}{{os_img}} | Out-Null
+    Add-VMDvdDrive -VMName {{os_version}}{{os_edition}} -ControllerNumber 0 -ControllerLocation 2 | Out-Null
+    Set-VMDvdDrive -VMName {{os_version}}{{os_edition}} -ControllerNumber 0 -ControllerLocation 2 -Path {{ISOSecondaryPath}}{{os_version}}{{os_edition}}\secondary.iso | Out-Null
+    Start-VM {{os_version}}{{os_edition}} | ConvertTo-Json -Depth 1
+  register: vm
+
+- name: Wait 10 sec for VM to boot
+  wait_for: timeout=10
+  delegate_to: localhost
+
+- name: Type boot command
+  win_shell: | 
+    $VMName = "{{os_version}}{{os_edition}}"
+    $VMCS = Get-WmiObject -Namespace root\virtualization\v2 -Class Msvm_ComputerSystem -Filter “ElementName='$($VMName)'”
+    $keyboard = $VMCS.GetRelated("Msvm_Keyboard")
+    $keyboard.TypeKey(0x1B) | out-null
+    sleep -Milliseconds 100
+    $keyboard.TypeKey(0x0D) | out-null
+    sleep -Seconds 1
+    $keyboard.TypeKey(0x1B) | out-null
+    sleep -Milliseconds 100
+    $keyboard.TypeKey(0x0D) | out-null
+
+- name: test
+  debug:
+    var: vm
+
+- name: Get VM IP
+  win_shell: (Get-VM {{os_version}}{{os_edition}} | Select -ExpandProperty NetworkAdapters | Select IPAddresses).IPAddresses[0]
+  until: vmip.stdout.find("192.168.0") != -1
+  retries: 30
+  delay: 60
+  register: vmip
+  ignore_errors: true
+- name: set fact
+  set_fact:
+    vm_ip: "{{ vmip.stdout_lines | first }}"
+- name: VM IP
+  debug: 
+    msg: "ip: {{ vm_ip }}"
+
+- name: Wait 60 sec for system to be ready
+  wait_for: "timeout=60"
+  delegate_to: localhost
+
+- name: Running Windows Update... (Long Running)
   win_shell: |
-    $hash = (Get-FileHash -Path C:\iso\{{os_img}} -Algorithm MD5).Hash
-    pushd C:\packer
-    .\packer build -force -var 'iso_url=../iso/{{os_img}}' -var "iso_checksum=$hash" -var "os_edition={{ os_edition }}" hyperv.json
+     $secpasswd = ConvertTo-SecureString '{{AdministratorPassword}}' -AsPlainText -Force
+     $cred = New-Object System.Management.Automation.PSCredential ("administrator", $secpasswd)
+     Import-Module -Force {{PSModulePath}}RemoteWindowsUpdate.psm1
+     Invoke-WindowsUpdate -ComputerName {{ vm_ip }} -AutoReboot -Cred $cred
+  until: winup.stdout.find("true") != -1
+  retries: 30
+  delay: 60
+  register: winup
+  ignore_errors: true
+  become: yes
+  become_method: runas
+  vars:
+    ansible_become_user: '{{ ansible_user }}'
+    ansible_become_pass: '{{ ansible_password }}'

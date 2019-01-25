@@ -136,7 +136,7 @@ $RemoteWindowsUpdate = {
         $updates | ConvertTo-Csv -NTI | Out-File -Encoding Default -FilePath $FilePath -Force
         return $False
     } else {
-        $hotfix = Get-HotFix -ComputerName $ComputerName | Sort-Object InstalledOn
+        $hotfix = Get-HotFix -ComputerName $ComputerName -Credential $Cred | Sort-Object InstalledOn
         $hotfix | ConvertTo-Csv -NTI | Out-File -Encoding Default -FilePath $FilePath -Force
         return $true
     }

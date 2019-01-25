@@ -1,0 +1,5 @@
+GitRepoPath: C:\packer
+ISOPath: C:\iso\
+ISOSecondaryPath: C:\packer\build\
+PSModulePath: C:\packer\scripts\modules\
+OutputPath: C:\

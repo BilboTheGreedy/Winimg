@@ -3,6 +3,7 @@
   hosts: hyperv
   gather_facts: no
   vars_files:
+    - vars/global_vars.yml
     - vars/autounattend_setup.yml
     - vars/windows_iso.yml
   roles:
