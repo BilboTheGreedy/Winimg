@@ -59,11 +59,28 @@
      $cred = New-Object System.Management.Automation.PSCredential ("administrator", $secpasswd)
      Import-Module -Force {{PSModulePath}}RemoteWindowsUpdate.psm1
      Invoke-WindowsUpdate -ComputerName {{ vm_ip }} -AutoReboot -Cred $cred
-  until: winup.stdout.find("true") != -1
+  until: winup.stdout.find("True") != -1
   retries: 30
   delay: 60
   register: winup
   ignore_errors: true
+  become: yes
+  become_method: runas
+  vars:
+    ansible_become_user: '{{ ansible_user }}'
+    ansible_become_pass: '{{ ansible_password }}'
+
+# Server 2016 fails on the first few runs, retry up to 5 times
+- name: DISM with reset base
+  win_shell: |
+    $secpasswd = ConvertTo-SecureString '{{AdministratorPassword}}' -AsPlainText -Force
+    $cred = New-Object System.Management.Automation.PSCredential ("administrator", $secpasswd)
+    Invoke-Command -ComputerName {{ vm_ip }} -Credential $Cred -ScriptBlock { DISM.exe /Online /Cleanup-Image /StartComponentCleanup /ResetBase }
+  register: cleanup_result
+  until: cleanup_result.rc == 0
+  retries: 5
+  delay: 1
+  ignore_errors: yes
   become: yes
   become_method: runas
   vars:
