@@ -90,3 +90,5 @@ Function Invoke-DownloadAndInstall() {
     Invoke-Command -ComputerName $ComputerName -Credential $Cred -ScriptBlock ${Function:Download} -ArgumentList $ComputerName,$URL,$Outpath,$UseProxy,$Proxyserver,$Cred
     Invoke-Command -ComputerName $ComputerName -Credential $Cred -ScriptBlock ${Function:InstallMSI} -ArgumentList $ComputerName,$Outpath,$ArgumentList,$Cred
 }
+
+Export-ModuleMember -Function "Invoke-DownloadAndInstall"
