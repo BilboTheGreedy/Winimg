@@ -136,7 +136,7 @@ $RemoteWindowsUpdate = {
         $updates | ConvertTo-Csv -NTI | Out-File -Encoding Default -FilePath $FilePath -Force
         return $False
     } else {
-        $hotfix = Get-HotFix -ComputerName $ComputerName -Credential $Cred | Sort-Object InstalledOn
+        $hotfix = invoke-command -ScriptBlock{ gwmi Win32_QuickFixEngineering} -ComputerName $ComputerName -Credential $Cred | Sort-Object InstalledOn
         $hotfix | ConvertTo-Csv -NTI | Out-File -Encoding Default -FilePath $FilePath -Force
         return $true
     }
