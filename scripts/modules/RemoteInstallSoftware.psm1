@@ -9,9 +9,6 @@ Function Download() {
         [Parameter(Position=3,Mandatory=$True)]
         [string]$Outpath,
 
-        [Parameter(Position=4,Mandatory=$False)]
-        [switch]$UseProxy,
-
         [Parameter(Position=5,Mandatory=$False)]
         [string]$Proxyserver,
 
@@ -19,7 +16,7 @@ Function Download() {
         [PSCredential]$Credential
     )
     Invoke-Command -ComputerName $ComputerName -Credential $Cred -ScriptBlock {
-        if ($UseProxy){
+        if ($Proxyserver){
             try{
                 Invoke-RestMethod -Method Get -Uri $Url -OutFile $Outpath -UseDefaultCredentials -Proxy $Proxyserver
              }
@@ -87,7 +84,7 @@ Function Invoke-DownloadAndInstall() {
         [Parameter(Position=7,Mandatory=$True)]
         [PSCredential]$Credential
     )
-    Invoke-Command -ComputerName $ComputerName -Credential $Credential -ScriptBlock ${Function:Download} -ArgumentList $ComputerName,$URL,$Outpath,$UseProxy,$Proxyserver,$Cred
+    Invoke-Command -ComputerName $ComputerName -Credential $Credential -ScriptBlock ${Function:Download} -ArgumentList $ComputerName,$URL,$Outpath,$Proxyserver,$Cred
     Invoke-Command -ComputerName $ComputerName -Credential $Credential -ScriptBlock ${Function:InstallMSI} -ArgumentList $ComputerName,$Outpath,$ArgumentList,$Cred
 }
 

@@ -94,9 +94,6 @@
     $cred = New-Object System.Management.Automation.PSCredential ("administrator", $secpasswd)
     Import-Module -Force {{PSModulePath}}RemoteInstallSoftware.psm1
     Invoke-DownloadAndInstall -ComputerName {{ vm_ip }} -Credential $Cred -URL 'https://www.cloudbase.it/downloads/CloudbaseInitSetup_Stable_x64.msi' -OutPath C:\Windows\Temp\cloudbase.msi -ArgumentList '/i C:\Windows\Temp\cloudbase.msi /qn'
-  register: cleanup_result
-  until: cleanup_result.rc == 0
-  ignore_errors: yes
   become: yes
   become_method: runas
   vars:
