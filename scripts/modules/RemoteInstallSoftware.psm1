@@ -84,8 +84,8 @@ Function Invoke-DownloadAndInstall() {
         [Parameter(Position=7,Mandatory=$True)]
         [PSCredential]$Credential
     )
-    Invoke-Command -ComputerName $ComputerName -Credential $Credential -ScriptBlock ${Function:Download} -ArgumentList $ComputerName,$URL,$Outpath,$Proxyserver,$Cred
-    Invoke-Command -ComputerName $ComputerName -Credential $Credential -ScriptBlock ${Function:InstallMSI} -ArgumentList $ComputerName,$Outpath,$ArgumentList,$Cred
+    Invoke-Command -ComputerName $ComputerName -Credential $Credential -ScriptBlock ${Function:Download} -ArgumentList $ComputerName,$URL,$Outpath,$Proxyserver,$Credential
+    Invoke-Command -ComputerName $ComputerName -Credential $Credential -ScriptBlock ${Function:InstallMSI} -ArgumentList $ComputerName,$Outpath,$ArgumentList,$Credential
 }
 
 Export-ModuleMember -Function "Invoke-DownloadAndInstall"
