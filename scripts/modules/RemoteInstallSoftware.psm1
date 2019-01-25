@@ -10,12 +10,10 @@ Function Download() {
         [string]$Outpath,
 
         [Parameter(Position=5,Mandatory=$False)]
-        [string]$Proxyserver,
+        [string]$Proxyserver
 
-        [Parameter(Position=6,Mandatory=$True)]
-        [PSCredential]$Credential
     )
-    Invoke-Command -ComputerName $ComputerName -Credential $Cred -ScriptBlock {
+
         if ($Proxyserver){
             try{
                 Invoke-RestMethod -Method Get -Uri $Url -OutFile $Outpath -UseDefaultCredentials -Proxy $Proxyserver
@@ -32,7 +30,7 @@ Function Download() {
                 throw "Download failed" 
              }
         } 
-    }
+    
     
 }
 
@@ -46,10 +44,7 @@ Function InstallMSI() {
         [string]$Path,
 
         [Parameter(Position=3,Mandatory=$True)]
-        [string]$ArgumentList,
-
-        [Parameter(Position=4,Mandatory=$True)]
-        [PSCredential]$Credential
+        [string]$ArgumentList
     )
     $p = Start-Process -Wait `
     -PassThru `
@@ -84,8 +79,8 @@ Function Invoke-DownloadAndInstall() {
         [Parameter(Position=7,Mandatory=$True)]
         [PSCredential]$Credential
     )
-    Invoke-Command -ComputerName $ComputerName -Credential $Credential -ScriptBlock ${Function:Download} -ArgumentList $ComputerName,$URL,$Outpath,$Proxyserver,$Credential
-    Invoke-Command -ComputerName $ComputerName -Credential $Credential -ScriptBlock ${Function:InstallMSI} -ArgumentList $ComputerName,$Outpath,$ArgumentList,$Credential
+    Invoke-Command -ComputerName $ComputerName -Credential $Credential -ScriptBlock ${Function:Download} -ArgumentList $ComputerName,$URL,$Outpath,$Proxyserver
+    Invoke-Command -ComputerName $ComputerName -Credential $Credential -ScriptBlock ${Function:InstallMSI} -ArgumentList $ComputerName,$Outpath,$ArgumentList
 }
 
 Export-ModuleMember -Function "Invoke-DownloadAndInstall"
