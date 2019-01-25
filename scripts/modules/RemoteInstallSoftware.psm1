@@ -12,7 +12,7 @@ Function Download() {
         [Parameter(Position=4,Mandatory=$False)]
         [switch]$UseProxy,
 
-        [Parameter(Position=5,Mandatory=$True)]
+        [Parameter(Position=5,Mandatory=$False)]
         [string]$Proxyserver,
 
         [Parameter(Position=6,Mandatory=$True)]
@@ -48,7 +48,7 @@ Function InstallMSI() {
         [Parameter(Position=2,Mandatory=$True)]
         [string]$Path,
 
-        [Parameter(Position=3,Mandatory=$False)]
+        [Parameter(Position=3,Mandatory=$True)]
         [string]$ArgumentList,
 
         [Parameter(Position=4,Mandatory=$True)]
@@ -80,7 +80,7 @@ Function Invoke-DownloadAndInstall() {
         [Parameter(Position=4,Mandatory=$False)]
         [switch]$UseProxy,
 
-        [Parameter(Position=5,Mandatory=$True)]
+        [Parameter(Position=5,Mandatory=$False)]
         [string]$Proxyserver,
         [Parameter(Position=6,Mandatory=$True)]
         [string]$ArgumentList,
