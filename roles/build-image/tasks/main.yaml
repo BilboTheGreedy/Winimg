@@ -53,22 +53,22 @@
 #   wait_for: timeout=60
 #   delegate_to: localhost
 
-- name: Running Windows Update... (Long Running)
-  win_shell: |
-     $secpasswd = ConvertTo-SecureString '{{AdministratorPassword}}' -AsPlainText -Force
-     $cred = New-Object System.Management.Automation.PSCredential ("administrator", $secpasswd)
-     Import-Module -Force {{PSModulePath}}RemoteWindowsUpdate.psm1
-     Invoke-WindowsUpdate -ComputerName {{ vm_ip }} -AutoReboot -Cred $cred
-  until: winup.stdout.find("True") != -1
-  retries: 30
-  delay: 60
-  register: winup
-  ignore_errors: true
-  become: yes
-  become_method: runas
-  vars:
-    ansible_become_user: '{{ ansible_user }}'
-    ansible_become_pass: '{{ ansible_password }}'
+# - name: Running Windows Update... (Long Running)
+#   win_shell: |
+#      $secpasswd = ConvertTo-SecureString '{{AdministratorPassword}}' -AsPlainText -Force
+#      $cred = New-Object System.Management.Automation.PSCredential ("administrator", $secpasswd)
+#      Import-Module -Force {{PSModulePath}}RemoteWindowsUpdate.psm1
+#      Invoke-WindowsUpdate -ComputerName {{ vm_ip }} -AutoReboot -Cred $cred
+#   until: winup.stdout.find("True") != -1
+#   retries: 30
+#   delay: 60
+#   register: winup
+#   ignore_errors: true
+#   become: yes
+#   become_method: runas
+#   vars:
+#     ansible_become_user: '{{ ansible_user }}'
+#     ansible_become_pass: '{{ ansible_password }}'
 
 # # Server 2016 fails on the first few runs, retry up to 5 times
 # - name: DISM with reset base
@@ -93,7 +93,7 @@
     $secpasswd = ConvertTo-SecureString '{{AdministratorPassword}}' -AsPlainText -Force
     $cred = New-Object System.Management.Automation.PSCredential ("administrator", $secpasswd)
     Import-Module -Force {{PSModulePath}}RemoteInstallSoftware.psm1
-    Invoke-DownloadAndInstall -ComputerName {{ vm_ip }} -Credential $Cred -URL 'https://www.cloudbase.it/downloads/CloudbaseInitSetup_Stable_x64.msi' -OutPath C:\Windows\Temp\cloudbase.msi -ArgumentList "/i C:\Windows\Temp\cloudbase.msi /qn"
+    Invoke-DownloadAndInstall -ComputerName {{ vm_ip }} -Credential $Cred -URL 'https://www.cloudbase.it/downloads/CloudbaseInitSetup_Stable_x64.msi' -OutPath C:\Windows\Temp\cloudbase.msi -ArgumentList '/i C:\Windows\Temp\cloudbase.msi /qn'
   register: cleanup_result
   until: cleanup_result.rc == 0
   ignore_errors: yes

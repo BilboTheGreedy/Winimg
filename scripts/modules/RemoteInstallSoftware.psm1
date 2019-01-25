@@ -35,7 +35,7 @@ Function Download() {
                 throw "Download failed" 
              }
         } 
-    } -ArgumentList
+    }
     
 }
 
