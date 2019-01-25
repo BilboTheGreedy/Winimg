@@ -11,6 +11,6 @@
 #    - role: prepare-packer
 #    - role: windows-iso
 #    - role: build-image
-    - role: test
+    - role: build-image
       
     
