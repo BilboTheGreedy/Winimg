@@ -115,6 +115,8 @@ $RemoteWindowsUpdate = {
         [Parameter(Position=3,Mandatory=$False)]
         [switch]$ListOnly,
         [Parameter(Position=4,Mandatory=$True)]
+        [string]$LogPath,
+        [Parameter(Position=5,Mandatory=$True)]
         [PSCredential]$Cred
     )
 
@@ -130,7 +132,7 @@ $RemoteWindowsUpdate = {
 
     $AvailableUpdates = Invoke-Command -ComputerName $ComputerName -ScriptBlock ${Function:Install-WindowsUpdate} -ArgumentList $True  -Credential $Cred
 
-    $FilePath = "C:\windows\temp\RemoteWindowsUpdate_{0}_{1}.txt" -f $ComputerName,(Get-Date -f "yyyyMMdd")
+    $FilePath = "{0}_{1}_{2}.txt" -f $LogPath,$ComputerName,(Get-Date -f "yyyyMMdd")
     if ($AvailableUpdates) {
         $updates = $AvailableUpdates | Select-Object @{L="KB";E={$_.KBArticleIds -join ","}},Title,LastDeploymentChangeTime
         $updates | ConvertTo-Csv -NTI | Out-File -Encoding Default -FilePath $FilePath -Force
@@ -151,18 +153,16 @@ Function Invoke-WindowsUpdate {
         [switch]$AutoReboot,
 
         [Parameter(Position=3,Mandatory=$False)]
-        [switch]$AsJob,
+        [string]$LogPath,
 
         [Parameter(Position=4,Mandatory=$False)]
         [switch]$ListOnly,
         [Parameter(Position=5,Mandatory=$True)]
         [PSCredential]$Cred
     )
-    if ($AsJob) {
-        Start-Job -Name $ComputerName -InitializationScript $InitScript -ScriptBlock $RemoteWindowsUpdate -ArgumentList $ComputerName,$AutoReboot,$ListOnly,$Cred 
-    } else {
-        Start-Job -Name $ComputerName -InitializationScript $InitScript -ScriptBlock $RemoteWindowsUpdate -ArgumentList $ComputerName,$AutoReboot,$ListOnly,$Cred  | Wait-Job | Receive-Job -AutoRemoveJob -Wait
-    }
+
+        Start-Job -Name $ComputerName -InitializationScript $InitScript -ScriptBlock $RemoteWindowsUpdate -ArgumentList $ComputerName,$AutoReboot,$ListOnly,$LogPath,$Cred  | Wait-Job | Receive-Job -AutoRemoveJob -Wait
+    
 }
 
 Export-ModuleMember -Function "Invoke-WindowsUpdate"
