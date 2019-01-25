@@ -125,7 +125,7 @@ $RemoteWindowsUpdate = {
     $RebootRequired = Invoke-Command -ComputerName $ComputerName -ScriptBlock ${Function:Install-RemoteWindowsUpdate} -ArgumentList ("{" + ${Function:Install-WindowsUpdate}.ToString() + "}") -Credential $Cred
 
     if ($RebootRequired -and $AutoReboot) {
-        Restart-Computer $ComputerName -Wait -Force -Credential $Cred
+        Restart-Computer $ComputerName -Wait -Force -Credential $Cred -Protocol WSMan
     }
 
     $AvailableUpdates = Invoke-Command -ComputerName $ComputerName -ScriptBlock ${Function:Install-WindowsUpdate} -ArgumentList $True  -Credential $Cred
