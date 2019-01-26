@@ -1,6 +1,6 @@
-- name: get list of isos
+- name: Set iso fact
   set_fact:
-    os_img: "{{windows_iso[os_version]| first}}"
+    os_iso: "{{windows_iso[os_version]| first}}"
 
 - name: Create VM
   win_shell: | 
@@ -8,7 +8,7 @@
     New-VM -Name {{os_version}}{{os_edition}} -MemoryStartupBytes 2048MB -Generation 2 -SwitchName NATSwitch -VHDPath {{OutputPath}}{{os_version}}{{os_edition}}.vhdx | Out-Null
     Set-VM -Name {{os_version}}{{os_edition}} -ProcessorCount 4
     Add-VMDvdDrive -VMName {{os_version}}{{os_edition}} -ControllerNumber 0 -ControllerLocation 1 | Out-Null
-    Set-VMDvdDrive -VMName {{os_version}}{{os_edition}} -ControllerNumber 0 -ControllerLocation 1 -Path {{ISOPath}}{{os_img}} | Out-Null
+    Set-VMDvdDrive -VMName {{os_version}}{{os_edition}} -ControllerNumber 0 -ControllerLocation 1 -Path {{ISOPath}}{{os_iso}} | Out-Null
     Add-VMDvdDrive -VMName {{os_version}}{{os_edition}} -ControllerNumber 0 -ControllerLocation 2 | Out-Null
     Set-VMDvdDrive -VMName {{os_version}}{{os_edition}} -ControllerNumber 0 -ControllerLocation 2 -Path {{ISOSecondaryPath}}{{os_version}}{{os_edition}}\secondary.iso | Out-Null
     Start-VM {{os_version}}{{os_edition}} | ConvertTo-Json -Depth 1
@@ -31,9 +31,6 @@
     sleep -Milliseconds 100
     $keyboard.TypeKey(0x0D) | out-null
 
-- name: test
-  debug:
-    var: vm
 
 - name: Get VM IP
   win_shell: (Get-VM {{os_version}}{{os_edition}} | Select -ExpandProperty NetworkAdapters | Select IPAddresses).IPAddresses[0]
@@ -42,12 +39,10 @@
   delay: 60
   register: vmip
   ignore_errors: true
+
 - name: set fact
   set_fact:
     vm_ip: "{{ vmip.stdout_lines | first }}"
-- name: VM IP
-  debug: 
-    msg: "ip: {{ vm_ip }}"
 
 - name: Wait 60 sec for system to be ready
   wait_for: timeout=60
@@ -74,7 +69,7 @@
   win_shell: |
     $secpasswd = ConvertTo-SecureString '{{AdministratorPassword}}' -AsPlainText -Force
     $cred = New-Object System.Management.Automation.PSCredential ("administrator", $secpasswd)
-    Import-Module -Force {{PSModulePath}}RemoteInstallSoftware.psm1
+    Import-Module -Force {{PSModulePath}}RemoteConfig.psm1
     Invoke-DownloadAndInstall -ComputerName {{ vm_ip }} -Credential $Cred -URL 'https://www.cloudbase.it/downloads/CloudbaseInitSetup_Stable_x64.msi' -OutPath C:\Windows\Temp\cloudbase.msi -ArgumentList '/i C:\Windows\Temp\cloudbase.msi /qn'
   become: yes
   become_method: runas
@@ -82,7 +77,24 @@
     ansible_become_user: '{{ ansible_user }}'
     ansible_become_pass: '{{ ansible_password }}'
 
-# Server 2016 fails on the first few runs, retry up to 5 times
+
+- name: Run Optimize
+  win_shell: |
+    $secpasswd = ConvertTo-SecureString '{{AdministratorPassword}}' -AsPlainText -Force
+    $cred = New-Object System.Management.Automation.PSCredential ("administrator", $secpasswd)
+    Import-Module -Force {{PSModulePath}}RemoteConfig.psm1
+    Invoke-Optimize -ComputerName {{ vm_ip }} -Credential $Cred
+  register: cleanup_result
+  until: cleanup_result.rc == 0
+  retries: 5
+  delay: 1
+  ignore_errors: yes
+  become: yes
+  become_method: runas
+  vars:
+    ansible_become_user: '{{ ansible_user }}'
+    ansible_become_pass: '{{ ansible_password }}'
+
 - name: DISM with reset base
   win_shell: |
     $secpasswd = ConvertTo-SecureString '{{AdministratorPassword}}' -AsPlainText -Force
@@ -100,4 +112,34 @@
     ansible_become_pass: '{{ ansible_password }}'
 
 
+- name: Setup Complete
+  win_shell: |
+    $secpasswd = ConvertTo-SecureString '{{AdministratorPassword}}' -AsPlainText -Force
+    $cred = New-Object System.Management.Automation.PSCredential ("administrator", $secpasswd)
+    Invoke-Command -ComputerName {{ vm_ip }} -Credential $Cred -ScriptBlock { & "C:\Program Files\Cloudbase Solutions\Cloudbase-Init\bin\SetSetupComplete.cmd" }
+  register: cleanup_result
+  until: cleanup_result.rc == 0
+  retries: 5
+  delay: 1
+  ignore_errors: yes
+  become: yes
+  become_method: runas
+  vars:
+    ansible_become_user: '{{ ansible_user }}'
+    ansible_become_pass: '{{ ansible_password }}'
 
+- name: Run Sysprep
+  win_shell: |
+    $secpasswd = ConvertTo-SecureString '{{AdministratorPassword}}' -AsPlainText -Force
+    $cred = New-Object System.Management.Automation.PSCredential ("administrator", $secpasswd)
+    Invoke-Command -ComputerName {{ vm_ip }} -Credential $Cred -ScriptBlock { schtasks.exe /Run /TN \"packer-shutdown\" }
+  register: cleanup_result
+  until: cleanup_result.rc == 0
+  retries: 5
+  delay: 1
+  ignore_errors: yes
+  become: yes
+  become_method: runas
+  vars:
+    ansible_become_user: '{{ ansible_user }}'
+    ansible_become_pass: '{{ ansible_password }}'
