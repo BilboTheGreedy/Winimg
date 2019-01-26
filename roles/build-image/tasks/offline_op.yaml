@@ -1,0 +1,15 @@
+- name: Wait for VM to shutdown
+  win_shell: (get-vm -name {{os_version}}{{os_edition}}).state
+  until: vmstate.stdout.find("Off") != -1
+  retries: 30
+  delay: 10
+  register: vmstate
+  ignore_errors: true
+
+- name: Clean up & Compact disk
+  win_shell: | 
+    get-vm -name {{os_version}}{{os_edition}} | Remove-VM -Force
+    Mount-VHD {{OutputPath}}{{os_version}}{{os_edition}}.vhdx -ReadOnly
+    Optimize-VHD -Path {{OutputPath}}{{os_version}}{{os_edition}}.vhdx -Mode Full
+    Dismount-VHD -Path {{OutputPath}}{{os_version}}{{os_edition}}.vhdx
+    Resize-VHD -Path {{OutputPath}}{{os_version}}{{os_edition}}.vhdx -ToMinimumSize

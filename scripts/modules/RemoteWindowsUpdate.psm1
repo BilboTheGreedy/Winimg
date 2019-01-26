@@ -135,11 +135,11 @@ $RemoteWindowsUpdate = {
     $FilePath = "{0}_{1}_{2}.txt" -f $LogPath,$ComputerName,(Get-Date -f "yyyyMMdd")
     if ($AvailableUpdates) {
         $updates = $AvailableUpdates | Select-Object @{L="KB";E={$_.KBArticleIds -join ","}},Title,LastDeploymentChangeTime
-        $updates | ConvertTo-Csv -NTI | Out-File -Encoding Default -FilePath $FilePath -Force
+        $updates | ConvertTo-Csv -NTI | Out-File -Encoding Default -FilePath $FilePath -Force -Append
         return $False
     } else {
         $hotfix = invoke-command -ScriptBlock{ gwmi Win32_QuickFixEngineering} -ComputerName $ComputerName -Credential $Cred | Sort-Object InstalledOn
-        $hotfix | Select-Object CSName, Description, HotFixID, InstalledOn | ConvertTo-Csv -NTI | Out-File -Encoding Default -FilePath $FilePath -Force -Append
+        $hotfix | Select-Object Description, HotFixID, InstalledOn | ConvertTo-Csv -NTI | Out-File -Encoding Default -FilePath $FilePath -Force -Append
         return $true
     }
 }

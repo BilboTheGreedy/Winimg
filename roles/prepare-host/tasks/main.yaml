@@ -35,9 +35,5 @@
     New-VMSwitch -SwitchName "NATSwitch" -SwitchType Internal
     New-NetIPAddress -IPAddress 192.168.0.1 -PrefixLength 24 -InterfaceAlias "vEthernet (NATSwitch)"
     New-NetNAT -Name "NATNetwork" -InternalIPInterfaceAddressPrefix  192.168.0.0/24
-- name: Get PS Modules
-  win_shell: |
-    winrm s winrm/config/client '@{TrustedHosts="*"}'
-    Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
-    Set-PSRepository -Name "PSGallery" -InstallationPolicy Trusted
-    Install-Module PSWindowsUpdate -Confirm:$false
+- name: Set Winrm to trust all hosts
+  win_shell: winrm s winrm/config/client '@{TrustedHosts="*"}'
