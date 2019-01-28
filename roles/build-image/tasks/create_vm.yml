@@ -27,6 +27,9 @@
     sleep -Milliseconds 100
     $keyboard.TypeKey(0x0D) | out-null
 
+- name: Wait 360 sec for os to installed
+  wait_for: timeout=360
+  delegate_to: localhost
 
 - name: Get VM IP
   win_shell: (Get-VM {{os_version}}{{os_edition}} | Select -ExpandProperty NetworkAdapters | Select IPAddresses).IPAddresses[0]
@@ -40,6 +43,6 @@
   set_fact:
     vm_ip: "{{ vmip.stdout_lines | first }}"
 
-- name: Wait 60 sec for system to be ready
-  wait_for: timeout=60
+- name: Wait 90 sec for system to be ready
+  wait_for: timeout=90
   delegate_to: localhost

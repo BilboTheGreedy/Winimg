@@ -41,8 +41,8 @@ check_latest_version=false
 $CloudbaseInitFolder = "C:\Program Files\Cloudbase Solutions\Cloudbase-Init\conf"
 $configFile = "cloudbase-init.conf"
 $configFileUnattend = "cloudbase-init-unattend.conf"
-New-Item -Path $CloudbaseInitFolder -Name $configFile -Value $config -Force -ItemType file -Debug -Confirm:$false
-New-Item -Path $CloudbaseInitFolder -Name $configFileUnattend -Value $config -Force -ItemType file -Debug -Confirm:$false
+New-Item -Path $CloudbaseInitFolder -Name $configFile -Value $config -Force -ItemType file -Debug -Confirm:$false | Out-Null
+New-Item -Path $CloudbaseInitFolder -Name $configFileUnattend -Value $config -Force -ItemType file -Debug -Confirm:$false | Out-Null
 }
 
 Function Download() {
