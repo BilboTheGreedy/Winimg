@@ -149,4 +149,4 @@ Function Invoke-Optimize() {
    
 }
 Export-ModuleMember -Function "Invoke-Optimize"
-Export-ModuleMember -Function "Invoke-DownloadAndInstall"
+Export-ModuleMember -Function "Invoke-CloudbaseInit"
