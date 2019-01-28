@@ -2,7 +2,7 @@
   win_shell: (get-vm -name {{os_version}}{{os_edition}}).state
   until: vmstate.stdout.find("Off") != -1
   retries: 30
-  delay: 10
+  delay: 30
   register: vmstate
   ignore_errors: true
 

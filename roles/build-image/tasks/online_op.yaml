@@ -20,7 +20,7 @@
     $secpasswd = ConvertTo-SecureString '{{AdministratorPassword}}' -AsPlainText -Force
     $cred = New-Object System.Management.Automation.PSCredential ("administrator", $secpasswd)
     Import-Module -Force {{PSModulePath}}RemoteConfig.psm1
-    Invoke-DownloadAndInstall -ComputerName {{ vm_ip }} -Credential $Cred -URL 'https://www.cloudbase.it/downloads/CloudbaseInitSetup_Stable_x64.msi' -OutPath C:\Windows\Temp\cloudbase.msi -ArgumentList '/i C:\Windows\Temp\cloudbase.msi /qn'
+    Invoke-CloudbaseInit -ComputerName {{ vm_ip }} -Credential $Cred -URL 'https://www.cloudbase.it/downloads/CloudbaseInitSetup_Stable_x64.msi' -OutPath C:\Windows\Temp\cloudbase.msi -ArgumentList '/i C:\Windows\Temp\cloudbase.msi /qn'
   become: yes
   become_method: runas
   vars:
@@ -41,7 +41,7 @@
     ansible_become_user: '{{ ansible_user }}'
     ansible_become_pass: '{{ ansible_password }}'
 
-- name: Run DISM with reset base
+- name: Run DISM Cleanup-Image
   win_shell: |
     $secpasswd = ConvertTo-SecureString '{{AdministratorPassword}}' -AsPlainText -Force
     $cred = New-Object System.Management.Automation.PSCredential ("administrator", $secpasswd)
@@ -69,11 +69,11 @@
     ansible_become_user: '{{ ansible_user }}'
     ansible_become_pass: '{{ ansible_password }}'
 
-- name: Run Sysprep
+- name: Run Clear logs & Sysprep
   win_shell: |
     $secpasswd = ConvertTo-SecureString '{{AdministratorPassword}}' -AsPlainText -Force
     $cred = New-Object System.Management.Automation.PSCredential ("administrator", $secpasswd)
-    Invoke-Command -ComputerName {{ vm_ip }} -Credential $Cred -ScriptBlock { schtasks.exe /Run /TN "packer-shutdown" }
+    Invoke-Command -ComputerName {{ vm_ip }} -Credential $Cred -ScriptBlock {Get-EventLog -LogName * | ForEach { Clear-EventLog $_.Log };C:\Windows\System32\Sysprep\Sysprep.exe /generalize /oobe /shutdown /unattend:"C:\Program Files\Cloudbase Solutions\Cloudbase-Init\conf\Unattend.xml"}
   become: yes
   become_method: runas
   vars:

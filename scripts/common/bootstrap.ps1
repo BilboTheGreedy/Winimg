@@ -37,11 +37,11 @@ if ($nla_wmi.UserAuthenticationRequired -ne 1) {
 
 ## Register the packer shutdown task. This will be called in shutdown_command
 $Command = @'
-Unregister-ScheduledTask -TaskName "packer-shutdown" -Confirm:$false
+Unregister-ScheduledTask -TaskName "sysprep-shutdown" -Confirm:$false
 Get-EventLog -LogName * | ForEach { Clear-EventLog $_.Log } 
 C:\Windows\System32\Sysprep\Sysprep.exe /generalize /oobe /shutdown /unattend:"C:\Program Files\Cloudbase Solutions\Cloudbase-Init\conf\Unattend.xml"
 '@
 $Path = "C:\windows\temp\shutdown.ps1"
 Write-Output "Register Shutdown command..."
 Set-Content -Value $Command -Path $Path
-schtasks /create /RU "NT AUTHORITY\SYSTEM" /tn "packer-shutdown" /tr "Powershell.exe -file $Path" /sc onevent /ec system /mo *[system/eventid=9999]
+schtasks /create /RU "NT AUTHORITY\SYSTEM" /tn "sysprep-shutdown" /tr "Powershell.exe -file $Path" /sc onevent /ec system /mo *[system/eventid=9999]
