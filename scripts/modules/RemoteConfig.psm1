@@ -101,6 +101,7 @@ Function InstallMSI() {
 
 
 Function Finalize() {
+    $ErrorActionPreference = "SilentlyContinue"
     Optimize-Volume -DriveLetter C -Defrag -ReTrim -SlabConsolidate -Verbose
     $reg_winlogon_path = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon"
     Set-ItemProperty -Path $reg_winlogon_path -Name AutoAdminLogon -Value 0
