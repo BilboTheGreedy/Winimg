@@ -123,7 +123,7 @@ Function Finalize() {
     ##Remove windows updates downloads
     Remove-Item -Path "C:\Windows\SoftwareDistribution\Download\*" -Recurse -Force -Confirm:$false
     Get-EventLog -LogName * | ForEach { Clear-EventLog $_.Log } 
-    C:\Windows\System32\Sysprep\Sysprep.exe /generalize /oobe /shutdown /unattend:"C:\Program Files\Cloudbase Solutions\Cloudbase-Init\conf\Unattend.xml"
+    schtasks.exe /Run /TN \"sysprep-shutdown\"
 
 }
 

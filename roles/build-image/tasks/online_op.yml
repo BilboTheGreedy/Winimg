@@ -15,59 +15,59 @@
 #     ansible_become_user: '{{ ansible_user }}'
 #     ansible_become_pass: '{{ ansible_password }}'
 
-# - name: Download & Install Cloudbase-init
-#   win_shell: |
-#     $secpasswd = ConvertTo-SecureString '{{AdministratorPassword}}' -AsPlainText -Force
-#     $cred = New-Object System.Management.Automation.PSCredential ("administrator", $secpasswd)
-#     Import-Module -Force {{PSModulePath}}RemoteConfig.psm1
-#     Invoke-CloudbaseInit -ComputerName {{ vm_ip }} -Credential $Cred -URL 'https://www.cloudbase.it/downloads/CloudbaseInitSetup_Stable_x64.msi' -OutPath C:\Windows\Temp\cloudbase.msi -ArgumentList '/i C:\Windows\Temp\cloudbase.msi /qn'
-#   become: yes
-#   become_method: runas
-#   vars:
-#     ansible_become_user: '{{ ansible_user }}'
-#     ansible_become_pass: '{{ ansible_password }}'
+- name: Download & Install Cloudbase-init
+  win_shell: |
+    $secpasswd = ConvertTo-SecureString '{{AdministratorPassword}}' -AsPlainText -Force
+    $cred = New-Object System.Management.Automation.PSCredential ("administrator", $secpasswd)
+    Import-Module -Force {{PSModulePath}}RemoteConfig.psm1
+    Invoke-CloudbaseInit -ComputerName {{ vm_ip }} -Credential $Cred -URL 'https://www.cloudbase.it/downloads/CloudbaseInitSetup_Stable_x64.msi' -OutPath C:\Windows\Temp\cloudbase.msi -ArgumentList '/i C:\Windows\Temp\cloudbase.msi /qn'
+  become: yes
+  become_method: runas
+  vars:
+    ansible_become_user: '{{ ansible_user }}'
+    ansible_become_pass: '{{ ansible_password }}'
 
 
-# - name: Run Optimize
-#   win_shell: |
-#     $secpasswd = ConvertTo-SecureString '{{AdministratorPassword}}' -AsPlainText -Force
-#     $cred = New-Object System.Management.Automation.PSCredential ("administrator", $secpasswd)
-#     Import-Module -Force {{PSModulePath}}RemoteConfig.psm1
-#     Invoke-Optimize -ComputerName {{ vm_ip }} -Credential $Cred
-#   ignore_errors: yes
-#   become: yes
-#   become_method: runas
-#   vars:
-#     ansible_become_user: '{{ ansible_user }}'
-#     ansible_become_pass: '{{ ansible_password }}'
+- name: Run Optimize
+  win_shell: |
+    $secpasswd = ConvertTo-SecureString '{{AdministratorPassword}}' -AsPlainText -Force
+    $cred = New-Object System.Management.Automation.PSCredential ("administrator", $secpasswd)
+    Import-Module -Force {{PSModulePath}}RemoteConfig.psm1
+    Invoke-Optimize -ComputerName {{ vm_ip }} -Credential $Cred
+  ignore_errors: yes
+  become: yes
+  become_method: runas
+  vars:
+    ansible_become_user: '{{ ansible_user }}'
+    ansible_become_pass: '{{ ansible_password }}'
 
-# - name: Run DISM Cleanup-Image
-#   win_shell: |
-#     $secpasswd = ConvertTo-SecureString '{{AdministratorPassword}}' -AsPlainText -Force
-#     $cred = New-Object System.Management.Automation.PSCredential ("administrator", $secpasswd)
-#     Invoke-Command -ComputerName {{ vm_ip }} -Credential $Cred -ScriptBlock { DISM.exe /Online /Cleanup-Image /StartComponentCleanup /ResetBase }
-#   register: cleanup_result
-#   until: cleanup_result.rc == 0
-#   retries: 5
-#   delay: 1
-#   ignore_errors: yes
-#   become: yes
-#   become_method: runas
-#   vars:
-#     ansible_become_user: '{{ ansible_user }}'
-#     ansible_become_pass: '{{ ansible_password }}'
+- name: Run DISM Cleanup-Image
+  win_shell: |
+    $secpasswd = ConvertTo-SecureString '{{AdministratorPassword}}' -AsPlainText -Force
+    $cred = New-Object System.Management.Automation.PSCredential ("administrator", $secpasswd)
+    Invoke-Command -ComputerName {{ vm_ip }} -Credential $Cred -ScriptBlock { DISM.exe /Online /Cleanup-Image /StartComponentCleanup /ResetBase }
+  register: cleanup_result
+  until: cleanup_result.rc == 0
+  retries: 5
+  delay: 1
+  ignore_errors: yes
+  become: yes
+  become_method: runas
+  vars:
+    ansible_become_user: '{{ ansible_user }}'
+    ansible_become_pass: '{{ ansible_password }}'
 
 
-# - name: Setup Complete
-#   win_shell: |
-#     $secpasswd = ConvertTo-SecureString '{{AdministratorPassword}}' -AsPlainText -Force
-#     $cred = New-Object System.Management.Automation.PSCredential ("administrator", $secpasswd)
-#     Invoke-Command -ComputerName {{ vm_ip }} -Credential $Cred -ScriptBlock { & "C:\Program Files\Cloudbase Solutions\Cloudbase-Init\bin\SetSetupComplete.cmd" }
-#   become: yes
-#   become_method: runas
-#   vars:
-#     ansible_become_user: '{{ ansible_user }}'
-#     ansible_become_pass: '{{ ansible_password }}'
+- name: Setup Complete
+  win_shell: |
+    $secpasswd = ConvertTo-SecureString '{{AdministratorPassword}}' -AsPlainText -Force
+    $cred = New-Object System.Management.Automation.PSCredential ("administrator", $secpasswd)
+    Invoke-Command -ComputerName {{ vm_ip }} -Credential $Cred -ScriptBlock { & "C:\Program Files\Cloudbase Solutions\Cloudbase-Init\bin\SetSetupComplete.cmd" }
+  become: yes
+  become_method: runas
+  vars:
+    ansible_become_user: '{{ ansible_user }}'
+    ansible_become_pass: '{{ ansible_password }}'
 
 - name: Run Clear logs & Sysprep
   win_shell: |

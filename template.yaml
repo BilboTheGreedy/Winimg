@@ -10,8 +10,8 @@
 
 #    - role: prepare-host
 #    - role: prepare-packer
-    # - role: windows-iso
-#    - role: prepare-build
+    - role: windows-iso
+    - role: prepare-build
     - role: build-image
 #    - role: upload-image
       
