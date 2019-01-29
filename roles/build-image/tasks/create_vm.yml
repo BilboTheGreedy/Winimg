@@ -6,7 +6,7 @@
     Add-VMDvdDrive -VMName {{os_selection}} -ControllerNumber 0 -ControllerLocation 1 | Out-Null
     Set-VMDvdDrive -VMName {{os_selection}} -ControllerNumber 0 -ControllerLocation 1 -Path {{ISOPath}}{{os_iso}} | Out-Null
     Add-VMDvdDrive -VMName {{os_selection}} -ControllerNumber 0 -ControllerLocation 2 | Out-Null
-    Set-VMDvdDrive -VMName {{os_selection}} -ControllerNumber 0 -ControllerLocation 2 -Path {{ISOSecondaryPath}}{{os_selection}}\secondary.iso | Out-Null
+    Set-VMDvdDrive -VMName {{os_selection}} -ControllerNumber 0 -ControllerLocation 2 -Path {{GitRepoPath}}\build\{{os_selection}}\secondary.iso | Out-Null
     Start-VM {{os_selection}} | ConvertTo-Json -Depth 1
   register: vm
 

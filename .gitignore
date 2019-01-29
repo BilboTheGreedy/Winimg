@@ -1,5 +1,1 @@
-output-hyperv-iso/
-packer_cache/
-iso/
-*.exe
 *.retry

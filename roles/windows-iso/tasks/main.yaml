@@ -11,5 +11,6 @@
     dest: "{{ISOPath}}{{item}}"
     force: no
   loop: "{{ list_iso }}"
+  when: http_fileserver != 'skip'
 
  

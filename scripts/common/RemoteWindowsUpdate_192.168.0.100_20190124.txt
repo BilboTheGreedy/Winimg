@@ -1,3 +1,0 @@
-"KB","Title","LastDeploymentChangeTime"
-"4052623","Update for Windows Defender Antivirus antimalware platform - KB4052623 (Version 4.18.1901.7)","1/23/2019 0:00:00"
-"2267602","Definition Update for Windows Defender Antivirus - KB2267602 (Definition 1.285.31.0)","1/24/2019 0:00:00"

@@ -1,83 +1,72 @@
-# Packer Templates
-
-Tested and validated with Hyper-v 2016 and packer v1.3.3
-
-
-# Folder structure
-
-In the root you will find hyper-v json templates for packer. Working directory should be here always.
-
-├───bin  <-- contains qemu-img 
-├───build <-- template.yaml will output here for each os_version
-│   ├───win2012r2dc
-│   ├───win2012r2std
-│   ├───win2016dc
-│   └───win2016std
-├───output-hyperv-iso <-- output directory for packer (default)
-├───packer_cache <-- cache for iso etc
-├───scripts 
-│   └───common <-- used during provisioning stage
-│   └───setup <-- scripts added to secondary.iso
-├───templates <-- j2 templates
-└───vars <-- vars file for template.yaml
 
 
 
+## Prepare Build Host
 
-## Setting up Hyper-v build host 
+### Prerequisites
 
-1. Install Windows Server 2016 Standard or Datacenter, if VM make sure nested virtualization is enabled/allowed
-2. Install Hyper-v role
-3. Add Internal Switch, set IP of virtual interface and add NAT 
-`New-VMSwitch  -SwitchName  “NATSwitch”  -SwitchType  Internal`
-`New-NetIPAddress  -IPAddress  192.168.0.1  -PrefixLength  24  -InterfaceAlias  “vEthernet  (NATSwitch)”`
-`New-NetNAT  -Name  “NATNetwork”  -InternalIPInterfaceAddressPrefix  192.168.0.0/24`
-4. Deploy minimal linux server with DHCP service on the "NATSwitch"
-5. Clone repo to some sensible location (c:\packer for example)
-6. Download packer and plugins binaries
-7. Add ISO to iso/ (c:\packer\iso) Not required but recommended (packer can download ISOs from any given URL)
-8. Get the hash for the ISO (Get-FileHash c:\iso\en_winX.iso)
-9. Edit json template variable iso_checksum or run packer with -var "iso_checksum=*chksum*"
-10. Edit json template variable iso_url or run packer with -var "iso_url=*path/url*"
+* Install Windows Server 2016
+* Download and run [ConfigureRemotingForAnsible.ps1](https://github.com/ansible/ansible/blob/devel/examples/scripts/ConfigureRemotingForAnsible.ps1)
+* Configure any extra disks/volumes to be used
+
+### Apply Configuration
+Run playbook "prepare-host". This will do a couple of things
+* Install Hyper-v
+* Install DHCP
+* Configure Virtual Interface/Switch with IP 192.168.0.1
+* Configure NAT so hosts on 192.168.0.0/24 is reachable
+* Install GIT & Clone Repository
+* Trust all winrm clients on here
+
+After it has completed, build server is now ready.
+
+## Windows Iso
+Windows iso is defined in vars file 'windows_iso.yml' and selected depending on set {{os_version}} variable.
+
+iso will be downloaded and stored at {{ISOPath}} if {{http_fileserver}} is set to http url, set to 'skip' to ignore downloading.
+
+## Secondary Iso
+Secondary iso is required for unattended installation of Windows on UEFI since floppy drive is not supported.
+Iso will be created by role: prepare-build. It will update the git repo and create a new secondary iso each time the build is started. iso output will be in git-path\build\OS\secondary.iso
+
+### Autounattend.xml
+Templated from jinja2 template in prepare-build role
+vars set in autounattend_setup.yml
+### Boostrap.ps1
+Copied from scripts/setup. This will configure winrm and rdp at startup.
+### Cloudbase-init.conf
+Templated from jinja2 template in prepare-build role
+vars set in cloudbase_vars.yml
 
 
-## Plugins
-Plugins for windows is either placed in `%APPDATA%/packer.d/plugins` or in same folder as packer.exe
+## Image Process 
 
-### plugins list
-* Windows Update - [packer-provisioner-windows-update](https://github.com/rgl/packer-provisioner-windows-update) 
+#### Overview
+1. Create disk dynamic to {{OutputPath}}{{os_selection}}
+2. Create new G2 VM with 4G ram, select NATSwitch and VHDX created in step 1
+3. Add Windows ISO & Secondary ISO
+4. Boot VM
+5. Wait for Boot
+6. Type Boot Command
+7. Wait for OS install completion
+8. Get VM adapter IP
+9. Wait for System to be ready - bootstrap.ps1
+10. Run Windows Update
+11. Download & Install latest Cloudbase-init. Find and copy config from Secondary.iso
+12. Clean up image with dism
+13. Finalize & Sysprep with cloudbase-init unattend.
+14. Remove VM. Clean up & Compact disk
+15. Convert disk qemu-img (Optional)
+16. Upload disk for QA
 
-## Template.yaml
+## PS Modules
+Since we are working with double hop, modules for certain tasks can help enable remote functionality/automation of guests on build hosts.
 
-Since this is written for ansible, you will need to enable linux subsystem on windows. Alternativly run this from another host and push content to the build server.
-WS2016 build 16215+ and newer support linux subsystem feature. 
+### RemoteConfig.psm1
+* "Invoke-CloudbaseInit" = Install and configure Cloudbase-init agent
+* "Invoke-Finalize" = Clean up remnants of Autounattend, clear logs and sysprep image
 
-[Installing Linux subsystem on Windows](https://docs.microsoft.com/en-us/windows/wsl/install-on-server)
 
-You only need the secondary.iso files in respective os_version path in build directory. Example build/win2016std/secondary.iso
-
-Secondary iso will contain Autounattend.xml and bootstrap.ps1.
-
-It's fully possible to build isos with powershell alone together with mkisofs for windows, however since Ansible will be able to run sort-of natively on Windows, the better option is to use Ansible for its templating feature. With subsystem enabled, you can access windows volume on /mnt/c from terminal.
-
-## Using Proxy server 
-If build environment is behind a proxy server for internet access, you can set VM to use one.
-Set it in the same pass as the set-proxy.ps1 script is provisioned. To revert proxy settings, simply run another powershell provisioner pass with the same script later in the script.
-
-````
-      {
-        "type": "powershell",
-         "elevated_user":"{{ user `username`}}",
-         "elevated_password":"{{ user `password`}}",
-	 "environment_vars": [
-        	"UseProxy=$True",
-        	"Proxyserver=http://10.52.161.200:800"
-        ],
-        "scripts": [
-         "{{template_dir}}/scripts/common/set-proxy.ps1",
-         "{{template_dir}}/scripts/common/cloudbase-install.ps1"
-
-        ]
-      },
-````
-
+### RemoteWindowsUpdate.psm1
+This module will run a series of complex powershell jobs on the build host to update target Guest with latest Windows Updates. It will retry untill a "true" response is given. When true, all updates found is installed.*
+* "Invoke-WindowsUpdate" 

@@ -1,0 +1,16 @@
+---
+- name: Host Setup
+  hosts: hyperv
+  gather_facts: no
+  vars: 
+    HostConfig: true
+  vars_files:
+    - vars/global_vars.yml
+    - vars/autounattend_setup.yml
+    - vars/cloudbase_vars.yml
+    - vars/windows_iso.yml
+  roles:
+    - role: prepare-host
+    - role: windows-iso
+      
+    
