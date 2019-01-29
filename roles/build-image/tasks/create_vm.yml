@@ -1,13 +1,13 @@
 - name: Create VM
   win_shell: | 
-    New-VHD -Path {{OutputPath}}{{os_version}}{{os_edition}}.vhdx -Dynamic -SizeBytes 30GB | Out-Null
-    New-VM -Name {{os_version}}{{os_edition}} -MemoryStartupBytes 4096MB -Generation 2 -SwitchName NATSwitch -VHDPath {{OutputPath}}{{os_version}}{{os_edition}}.vhdx | Out-Null
-    Set-VM -Name {{os_version}}{{os_edition}} -ProcessorCount 4
-    Add-VMDvdDrive -VMName {{os_version}}{{os_edition}} -ControllerNumber 0 -ControllerLocation 1 | Out-Null
-    Set-VMDvdDrive -VMName {{os_version}}{{os_edition}} -ControllerNumber 0 -ControllerLocation 1 -Path {{ISOPath}}{{os_iso}} | Out-Null
-    Add-VMDvdDrive -VMName {{os_version}}{{os_edition}} -ControllerNumber 0 -ControllerLocation 2 | Out-Null
-    Set-VMDvdDrive -VMName {{os_version}}{{os_edition}} -ControllerNumber 0 -ControllerLocation 2 -Path {{ISOSecondaryPath}}{{os_version}}{{os_edition}}\secondary.iso | Out-Null
-    Start-VM {{os_version}}{{os_edition}} | ConvertTo-Json -Depth 1
+    New-VHD -Path {{OutputPath}}{{os_selection}}.vhdx -Dynamic -SizeBytes 30GB | Out-Null
+    New-VM -Name {{os_selection}} -MemoryStartupBytes 4096MB -Generation 2 -SwitchName NATSwitch -VHDPath {{OutputPath}}{{os_selection}}.vhdx | Out-Null
+    Set-VM -Name {{os_selection}} -ProcessorCount 4
+    Add-VMDvdDrive -VMName {{os_selection}} -ControllerNumber 0 -ControllerLocation 1 | Out-Null
+    Set-VMDvdDrive -VMName {{os_selection}} -ControllerNumber 0 -ControllerLocation 1 -Path {{ISOPath}}{{os_iso}} | Out-Null
+    Add-VMDvdDrive -VMName {{os_selection}} -ControllerNumber 0 -ControllerLocation 2 | Out-Null
+    Set-VMDvdDrive -VMName {{os_selection}} -ControllerNumber 0 -ControllerLocation 2 -Path {{ISOSecondaryPath}}{{os_selection}}\secondary.iso | Out-Null
+    Start-VM {{os_selection}} | ConvertTo-Json -Depth 1
   register: vm
 
 - name: Wait 10 sec for VM to boot
@@ -16,7 +16,7 @@
 
 - name: Type boot command
   win_shell: | 
-    $VMName = "{{os_version}}{{os_edition}}"
+    $VMName = "{{os_selection}}"
     $VMCS = Get-WmiObject -Namespace root\virtualization\v2 -Class Msvm_ComputerSystem -Filter “ElementName='$($VMName)'”
     $keyboard = $VMCS.GetRelated("Msvm_Keyboard")
     $keyboard.TypeKey(0x1B) | out-null
@@ -32,7 +32,7 @@
   delegate_to: localhost
 
 - name: Get VM IP
-  win_shell: (Get-VM {{os_version}}{{os_edition}} | Select -ExpandProperty NetworkAdapters | Select IPAddresses).IPAddresses[0]
+  win_shell: (Get-VM {{os_selection}} | Select -ExpandProperty NetworkAdapters | Select IPAddresses).IPAddresses[0]
   until: vmip.stdout.find("192.168.0") != -1
   retries: 30
   delay: 60

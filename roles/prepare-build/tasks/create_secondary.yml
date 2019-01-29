@@ -20,6 +20,11 @@
     src: templates/Autounattend.xml.j2
     dest: "{{GitRepoPath}}\\build\\{{os_selection}}\\Autounattend.xml"
 
+- name: Create cloudbase-init.conf from template
+  win_template:
+    src: templates/cloudbase-init.conf.j2
+    dest: "{{GitRepoPath}}\\build\\{{os_selection}}\\cloudbase-init.conf"
+
 - name: Copy bootstrap script
   win_copy:
     src: scripts/setup/bootstrap.ps1

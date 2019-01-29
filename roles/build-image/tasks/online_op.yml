@@ -1,25 +1,25 @@
-# - name: Running Windows Update... (Long Running)
-#   win_shell: |
-#      $secpasswd = ConvertTo-SecureString '{{AdministratorPassword}}' -AsPlainText -Force
-#      $cred = New-Object System.Management.Automation.PSCredential ("administrator", $secpasswd)
-#      Import-Module -Force {{PSModulePath}}RemoteWindowsUpdate.psm1
-#      Invoke-WindowsUpdate -ComputerName {{ vm_ip }} -AutoReboot -Cred $cred -LogPath "C:\{{os_version}}{{os_edition}}"
-#   until: winup.stdout.find("True") != -1
-#   retries: 30
-#   delay: 60
-#   register: winup
-#   ignore_errors: true
-#   become: yes
-#   become_method: runas
-#   vars:
-#     ansible_become_user: '{{ ansible_user }}'
-#     ansible_become_pass: '{{ ansible_password }}'
+- name: Running Windows Update... (Long Running)
+  win_shell: |
+     $secpasswd = ConvertTo-SecureString '{{AdministratorPassword}}' -AsPlainText -Force
+     $cred = New-Object System.Management.Automation.PSCredential ("administrator", $secpasswd)
+     Import-Module -Force {{GitRepoPath}}\scripts\modules\RemoteWindowsUpdate.psm1
+     Invoke-WindowsUpdate -ComputerName {{ vm_ip }} -AutoReboot -Cred $cred -LogPath "{{OutputPath}}{{os_selection}}"
+  until: winup.stdout.find("True") != -1
+  retries: 30
+  delay: 60
+  register: winup
+  ignore_errors: true
+  become: yes
+  become_method: runas
+  vars:
+    ansible_become_user: '{{ ansible_user }}'
+    ansible_become_pass: '{{ ansible_password }}'
 
 - name: Download & Install Cloudbase-init
   win_shell: |
     $secpasswd = ConvertTo-SecureString '{{AdministratorPassword}}' -AsPlainText -Force
     $cred = New-Object System.Management.Automation.PSCredential ("administrator", $secpasswd)
-    Import-Module -Force {{PSModulePath}}RemoteConfig.psm1
+    Import-Module -Force {{GitRepoPath}}\scripts\modules\RemoteConfig.psm1
     Invoke-CloudbaseInit -ComputerName {{ vm_ip }} -Credential $Cred -URL 'https://www.cloudbase.it/downloads/CloudbaseInitSetup_Stable_x64.msi' -OutPath C:\Windows\Temp\cloudbase.msi -ArgumentList '/i C:\Windows\Temp\cloudbase.msi /qn'
   become: yes
   become_method: runas
@@ -43,23 +43,11 @@
     ansible_become_user: '{{ ansible_user }}'
     ansible_become_pass: '{{ ansible_password }}'
 
-
-- name: Setup Complete
+- name: Finalize & Sysprep
   win_shell: |
     $secpasswd = ConvertTo-SecureString '{{AdministratorPassword}}' -AsPlainText -Force
     $cred = New-Object System.Management.Automation.PSCredential ("administrator", $secpasswd)
-    Invoke-Command -ComputerName {{ vm_ip }} -Credential $Cred -ScriptBlock { & "C:\Program Files\Cloudbase Solutions\Cloudbase-Init\bin\SetSetupComplete.cmd" }
-  become: yes
-  become_method: runas
-  vars:
-    ansible_become_user: '{{ ansible_user }}'
-    ansible_become_pass: '{{ ansible_password }}'
-
-- name: Run Clean & Sysprep
-  win_shell: |
-    $secpasswd = ConvertTo-SecureString '{{AdministratorPassword}}' -AsPlainText -Force
-    $cred = New-Object System.Management.Automation.PSCredential ("administrator", $secpasswd)
-    Import-Module -Force {{PSModulePath}}RemoteConfig.psm1
+    Import-Module -Force {{GitRepoPath}}\scripts\modules\RemoteConfig.psm1
     Invoke-Finalize -ComputerName {{ vm_ip }} -Credential $Cred
   become: yes
   become_method: runas

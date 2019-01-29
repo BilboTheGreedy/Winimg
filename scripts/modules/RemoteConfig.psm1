@@ -1,48 +1,12 @@
 function Copy-CloudbaseConf {
-$config = @"
-[DEFAULT]
-username=Administrator
-groups=Administrators
-inject_user_password=false
-config_drive_raw_hhd=true
-config_drive_cdrom=true
-config_drive_vfat=true
-bsdtar_path=C:\Program Files\Cloudbase Solutions\Cloudbase-Init\bin\bsdtar.exe
-mtools_path=C:\Program Files\Cloudbase Solutions\Cloudbase-Init\bin\
-verbose=true
-debug=true
-logdir=C:\Program Files\Cloudbase Solutions\Cloudbase-Init\log\
-logfile=cloudbase-init-unattend.log
-default_log_levels=comtypes=INFO,suds=INFO,iso8601=WARN,requests=WARN
-logging_serial_port_settings=
-mtu_use_dhcp_config=true
-ntp_use_dhcp_config=true
-local_scripts_path=C:\Program Files\Cloudbase Solutions\Cloudbase-Init\LocalScripts\
-metadata_services=cloudbaseinit.metadata.services.configdrive.ConfigDriveService,cloudbaseinit.metadata.services.httpservice.HttpService,cloudbaseinit.metadata.services.ec2service.EC2Service,cloudbaseinit.metadata.services.maasservice.MaaSHttpService
-plugins=cloudbaseinit.plugins.common.mtu.MTUPlugin,
-        cloudbaseinit.plugins.windows.ntpclient.NTPClientPlugin,
-        cloudbaseinit.plugins.common.sethostname.SetHostNamePlugin,
-        cloudbaseinit.plugins.windows.createuser.CreateUserPlugin,
-        cloudbaseinit.plugins.common.networkconfig.NetworkConfigPlugin,
-        cloudbaseinit.plugins.windows.licensing.WindowsLicensingPlugin,
-        cloudbaseinit.plugins.common.sshpublickeys.SetUserSSHPublicKeysPlugin,
-        cloudbaseinit.plugins.windows.extendvolumes.ExtendVolumesPlugin,
-        cloudbaseinit.plugins.common.setuserpassword.SetUserPasswordPlugin,
-        cloudbaseinit.plugins.common.userdata.UserDataPlugin,
-        cloudbaseinit.plugins.windows.winrmlistener.ConfigWinRMListenerPlugin,
-        cloudbaseinit.plugins.windows.winrmcertificateauth.ConfigWinRMCertificateAuthPlugin,
-        cloudbaseinit.plugins.common.localscripts.LocalScriptsPlugin
-allow_reboot=false
-stop_service_on_exit=false
-check_latest_version=false
-"@
-
+#find cloudbase-init.conf on secondary drive 
+Get-PSDrive -PSProvider FileSystem| %{if (test-path ("{0}cloudbase-init.conf" -f $_.Root)) {$cbc= $_.root+"cloudbase-init.conf"}}
 ## Replace config files
 $CloudbaseInitFolder = "C:\Program Files\Cloudbase Solutions\Cloudbase-Init\conf"
 $configFile = "cloudbase-init.conf"
 $configFileUnattend = "cloudbase-init-unattend.conf"
-New-Item -Path $CloudbaseInitFolder -Name $configFile -Value $config -Force -ItemType file -Debug -Confirm:$false | Out-Null
-New-Item -Path $CloudbaseInitFolder -Name $configFileUnattend -Value $config -Force -ItemType file -Debug -Confirm:$false | Out-Null
+New-Item -Path $CloudbaseInitFolder -Name $configFile -Value (cat $cbc -raw) -Force -ItemType file -Confirm:$false | Out-Null
+New-Item -Path $CloudbaseInitFolder -Name $configFileUnattend -Value (cat $cbc -raw) -Force -ItemType file -Confirm:$false | Out-Null
 }
 
 Function Download() {
@@ -102,6 +66,7 @@ Function InstallMSI() {
 
 Function Finalize() {
     $ErrorActionPreference = "SilentlyContinue"
+    & "C:\Program Files\Cloudbase Solutions\Cloudbase-Init\bin\SetSetupComplete.cmd"
     Optimize-Volume -DriveLetter C -Defrag -ReTrim -SlabConsolidate -Verbose
     $reg_winlogon_path = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon"
     Set-ItemProperty -Path $reg_winlogon_path -Name AutoAdminLogon -Value 0
@@ -115,13 +80,14 @@ Function Finalize() {
     Remove-Item -Path C:\Windows\Panther -Force -Recurse -Confirm:$false
     ##Remove windows updates downloads
     Remove-Item -Path "C:\Windows\SoftwareDistribution\Download\*" -Recurse -Force -Confirm:$false
-    Get-EventLog -LogName * | ForEach { Clear-EventLog $_.Log } 
-    $ScriptBlock = '
-    Unregister-ScheduledTask -TaskName "sysprep" -Confirm
-    $false;C:\Windows\System32\Sysprep\Sysprep.exe /generalize /oobe /shutdown /unattend:"C:\Program Files\Cloudbase Solutions\Cloudbase-Init\conf\Unattend.xml"
-    '
+    #Sysprep
+    $ScriptBlock = {
+        Unregister-ScheduledTask -TaskName "sysprep" -Confirm:$false
+        C:\Windows\System32\Sysprep\Sysprep.exe /generalize /oobe /shutdown /unattend:"C:\Program Files\Cloudbase Solutions\Cloudbase-Init\conf\Unattend.xml"
+    }
     $opt = New-ScheduledJobOption -RunElevated
     Register-ScheduledJob -ScriptBlock $ScriptBlock -Name "sysprep" -ScheduledJobOption $opt -RunNow
+    Get-EventLog -LogName * | ForEach { Clear-EventLog $_.Log } 
 }
 
 Function Invoke-Finalize() {
