@@ -99,22 +99,14 @@ Function InstallMSI() {
 
 }
 
-Function Optimize() {
-    $ErrorActionPreference = "SilentlyContinue" 
-    ##
-    Optimize-Volume -DriveLetter C -Defrag -ReTrim -SlabConsolidate -Verbose
-
-}
 
 Function Finalize() {
-   
-    Write-Log -message "Deleting auto logon entries from registry"
+    Optimize-Volume -DriveLetter C -Defrag -ReTrim -SlabConsolidate -Verbose
     $reg_winlogon_path = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon"
     Set-ItemProperty -Path $reg_winlogon_path -Name AutoAdminLogon -Value 0
     Remove-ItemProperty -Path $reg_winlogon_path -Name DefaultUserName -ErrorAction SilentlyContinue
     Remove-ItemProperty -Path $reg_winlogon_path -Name DefaultPassword -ErrorAction SilentlyContinue
 
-    Write-Log -message "Setting the rearm key back to 0 so people in the future can rearm the OS"
     Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SoftwareProtectionPlatform" -Name SkipRearm -Value 0
     ##Clear recovery - this gets readded after sysprep
     Remove-Item -Path C:\Recovery -Force -Recurse -Confirm:$false
@@ -123,8 +115,9 @@ Function Finalize() {
     ##Remove windows updates downloads
     Remove-Item -Path "C:\Windows\SoftwareDistribution\Download\*" -Recurse -Force -Confirm:$false
     Get-EventLog -LogName * | ForEach { Clear-EventLog $_.Log } 
-    schtasks.exe /Run /TN \"sysprep-shutdown\"
-
+    $ScriptBlock = 'Unregister-ScheduledTask -TaskName "sysprep-shutdown" -Confirm:$false;C:\Windows\System32\Sysprep\Sysprep.exe /generalize /oobe /shutdown /unattend:"C:\Program Files\Cloudbase Solutions\Cloudbase-Init\conf\Unattend.xml"'
+    $opt = New-ScheduledJobOption -RunElevated
+    Register-ScheduledJob -ScriptBlock $ScriptBlock -Name "sysprep-shutdown" -ScheduledJobOption $opt -RunNow | Out-Null
 }
 
 Function Invoke-Finalize() {
@@ -164,16 +157,6 @@ Function Invoke-CloudbaseInit() {
     Invoke-Command -ComputerName $ComputerName -Credential $Credential -ScriptBlock ${Function:Copy-CloudbaseConf}
 }
 
-Function Invoke-Optimize() {
-    Param(
-        [Parameter(Position=1,Mandatory=$True)]
-        [string]$ComputerName,
-        [Parameter(Position=2,Mandatory=$True)]
-        [PSCredential]$Credential
-    )
-    Invoke-Command -ComputerName $ComputerName -Credential $Credential -ScriptBlock ${Function:Optimize} 
-   
-}
+
 Export-ModuleMember -Function "Invoke-Finalize"
-Export-ModuleMember -Function "Invoke-Optimize"
 Export-ModuleMember -Function "Invoke-CloudbaseInit"

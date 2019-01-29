@@ -27,20 +27,6 @@
     ansible_become_user: '{{ ansible_user }}'
     ansible_become_pass: '{{ ansible_password }}'
 
-
-- name: Run Optimize
-  win_shell: |
-    $secpasswd = ConvertTo-SecureString '{{AdministratorPassword}}' -AsPlainText -Force
-    $cred = New-Object System.Management.Automation.PSCredential ("administrator", $secpasswd)
-    Import-Module -Force {{PSModulePath}}RemoteConfig.psm1
-    Invoke-Optimize -ComputerName {{ vm_ip }} -Credential $Cred
-  ignore_errors: yes
-  become: yes
-  become_method: runas
-  vars:
-    ansible_become_user: '{{ ansible_user }}'
-    ansible_become_pass: '{{ ansible_password }}'
-
 - name: Run DISM Cleanup-Image
   win_shell: |
     $secpasswd = ConvertTo-SecureString '{{AdministratorPassword}}' -AsPlainText -Force
@@ -69,7 +55,7 @@
     ansible_become_user: '{{ ansible_user }}'
     ansible_become_pass: '{{ ansible_password }}'
 
-- name: Run Clear logs & Sysprep
+- name: Run Clean & Sysprep
   win_shell: |
     $secpasswd = ConvertTo-SecureString '{{AdministratorPassword}}' -AsPlainText -Force
     $cred = New-Object System.Management.Automation.PSCredential ("administrator", $secpasswd)

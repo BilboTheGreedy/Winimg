@@ -32,3 +32,4 @@ if ($nla_wmi.UserAuthenticationRequired -ne 1) {
     Write-Log -message $error_message -level "ERROR"
     throw $error_message
 }
+
