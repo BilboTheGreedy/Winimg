@@ -1,0 +1,29 @@
+- name: Set os_selection fact
+  set_fact:
+    os_selection: "{{os_version}}{{os_edition}}"
+
+- name: Check for repo updates
+  win_shell: pushd {{GitRepoPath}}; git pull
+
+- name: Clean build path
+  win_file:
+    path: "{{GitRepoPath}}\\build\\{{os_selection}}"
+    state: absent
+
+- name: Create build folder
+  win_file:
+    path: "{{GitRepoPath}}\\build\\{{os_selection}}"
+    state: directory
+
+- name: Create Autounattend from template
+  win_template:
+    src: templates/Autounattend.xml.j2
+    dest: "{{GitRepoPath}}\\build\\{{os_selection}}\\Autounattend.xml"
+
+- name: Copy bootstrap script
+  win_copy:
+    src: scripts/setup/bootstrap.ps1
+    dest: "{{GitRepoPath}}\\build\\{{os_selection}}\\bootstrap.ps1"
+    
+- name: Create secondary iso
+  win_shell: "{{GitRepoPath}}\\bin\\mkisofs.exe -joliet-long -lU -o {{GitRepoPath}}\\build\\{{os_selection}}\\secondary.iso {{GitRepoPath}}\\build\\{{os_selection}}"

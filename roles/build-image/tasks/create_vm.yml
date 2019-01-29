@@ -1,35 +1,35 @@
-- name: Create VM
-  win_shell: | 
-    New-VHD -Path {{OutputPath}}{{os_version}}{{os_edition}}.vhdx -Dynamic -SizeBytes 30GB | Out-Null
-    New-VM -Name {{os_version}}{{os_edition}} -MemoryStartupBytes 4096MB -Generation 2 -SwitchName NATSwitch -VHDPath {{OutputPath}}{{os_version}}{{os_edition}}.vhdx | Out-Null
-    Set-VM -Name {{os_version}}{{os_edition}} -ProcessorCount 4
-    Add-VMDvdDrive -VMName {{os_version}}{{os_edition}} -ControllerNumber 0 -ControllerLocation 1 | Out-Null
-    Set-VMDvdDrive -VMName {{os_version}}{{os_edition}} -ControllerNumber 0 -ControllerLocation 1 -Path {{ISOPath}}{{os_iso}} | Out-Null
-    Add-VMDvdDrive -VMName {{os_version}}{{os_edition}} -ControllerNumber 0 -ControllerLocation 2 | Out-Null
-    Set-VMDvdDrive -VMName {{os_version}}{{os_edition}} -ControllerNumber 0 -ControllerLocation 2 -Path {{ISOSecondaryPath}}{{os_version}}{{os_edition}}\secondary.iso | Out-Null
-    Start-VM {{os_version}}{{os_edition}} | ConvertTo-Json -Depth 1
-  register: vm
+# - name: Create VM
+#   win_shell: | 
+#     New-VHD -Path {{OutputPath}}{{os_version}}{{os_edition}}.vhdx -Dynamic -SizeBytes 30GB | Out-Null
+#     New-VM -Name {{os_version}}{{os_edition}} -MemoryStartupBytes 4096MB -Generation 2 -SwitchName NATSwitch -VHDPath {{OutputPath}}{{os_version}}{{os_edition}}.vhdx | Out-Null
+#     Set-VM -Name {{os_version}}{{os_edition}} -ProcessorCount 4
+#     Add-VMDvdDrive -VMName {{os_version}}{{os_edition}} -ControllerNumber 0 -ControllerLocation 1 | Out-Null
+#     Set-VMDvdDrive -VMName {{os_version}}{{os_edition}} -ControllerNumber 0 -ControllerLocation 1 -Path {{ISOPath}}{{os_iso}} | Out-Null
+#     Add-VMDvdDrive -VMName {{os_version}}{{os_edition}} -ControllerNumber 0 -ControllerLocation 2 | Out-Null
+#     Set-VMDvdDrive -VMName {{os_version}}{{os_edition}} -ControllerNumber 0 -ControllerLocation 2 -Path {{ISOSecondaryPath}}{{os_version}}{{os_edition}}\secondary.iso | Out-Null
+#     Start-VM {{os_version}}{{os_edition}} | ConvertTo-Json -Depth 1
+#   register: vm
 
-- name: Wait 10 sec for VM to boot
-  wait_for: timeout=10
-  delegate_to: localhost
+# - name: Wait 10 sec for VM to boot
+#   wait_for: timeout=10
+#   delegate_to: localhost
 
-- name: Type boot command
-  win_shell: | 
-    $VMName = "{{os_version}}{{os_edition}}"
-    $VMCS = Get-WmiObject -Namespace root\virtualization\v2 -Class Msvm_ComputerSystem -Filter “ElementName='$($VMName)'”
-    $keyboard = $VMCS.GetRelated("Msvm_Keyboard")
-    $keyboard.TypeKey(0x1B) | out-null
-    sleep -Milliseconds 100
-    $keyboard.TypeKey(0x0D) | out-null
-    sleep -Seconds 1
-    $keyboard.TypeKey(0x1B) | out-null
-    sleep -Milliseconds 100
-    $keyboard.TypeKey(0x0D) | out-null
+# - name: Type boot command
+#   win_shell: | 
+#     $VMName = "{{os_version}}{{os_edition}}"
+#     $VMCS = Get-WmiObject -Namespace root\virtualization\v2 -Class Msvm_ComputerSystem -Filter “ElementName='$($VMName)'”
+#     $keyboard = $VMCS.GetRelated("Msvm_Keyboard")
+#     $keyboard.TypeKey(0x1B) | out-null
+#     sleep -Milliseconds 100
+#     $keyboard.TypeKey(0x0D) | out-null
+#     sleep -Seconds 1
+#     $keyboard.TypeKey(0x1B) | out-null
+#     sleep -Milliseconds 100
+#     $keyboard.TypeKey(0x0D) | out-null
 
-- name: Wait 360 sec for os to installed
-  wait_for: timeout=360
-  delegate_to: localhost
+# - name: Wait 360 sec for os to installed
+#   wait_for: timeout=360
+#   delegate_to: localhost
 
 - name: Get VM IP
   win_shell: (Get-VM {{os_version}}{{os_edition}} | Select -ExpandProperty NetworkAdapters | Select IPAddresses).IPAddresses[0]
@@ -43,6 +43,6 @@
   set_fact:
     vm_ip: "{{ vmip.stdout_lines | first }}"
 
-- name: Wait 90 sec for system to be ready
-  wait_for: timeout=90
-  delegate_to: localhost
+# - name: Wait 120 sec for system to be ready
+#   wait_for: timeout=120
+#   delegate_to: localhost

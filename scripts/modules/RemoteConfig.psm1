@@ -103,12 +103,38 @@ Function Optimize() {
     $ErrorActionPreference = "SilentlyContinue" 
     ##
     Optimize-Volume -DriveLetter C -Defrag -ReTrim -SlabConsolidate -Verbose
+
+}
+
+Function Finalize() {
+   
+    Write-Log -message "Deleting auto logon entries from registry"
+    $reg_winlogon_path = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon"
+    Set-ItemProperty -Path $reg_winlogon_path -Name AutoAdminLogon -Value 0
+    Remove-ItemProperty -Path $reg_winlogon_path -Name DefaultUserName -ErrorAction SilentlyContinue
+    Remove-ItemProperty -Path $reg_winlogon_path -Name DefaultPassword -ErrorAction SilentlyContinue
+
+    Write-Log -message "Setting the rearm key back to 0 so people in the future can rearm the OS"
+    Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SoftwareProtectionPlatform" -Name SkipRearm -Value 0
     ##Clear recovery - this gets readded after sysprep
     Remove-Item -Path C:\Recovery -Force -Recurse -Confirm:$false
     ##Clear autounattend logs
     Remove-Item -Path C:\Windows\Panther -Force -Recurse -Confirm:$false
     ##Remove windows updates downloads
     Remove-Item -Path "C:\Windows\SoftwareDistribution\Download\*" -Recurse -Force -Confirm:$false
+    Get-EventLog -LogName * | ForEach { Clear-EventLog $_.Log } 
+    C:\Windows\System32\Sysprep\Sysprep.exe /generalize /oobe /shutdown /unattend:"C:\Program Files\Cloudbase Solutions\Cloudbase-Init\conf\Unattend.xml"
+
+}
+
+Function Invoke-Finalize() {
+    Param(
+        [Parameter(Position=1,Mandatory=$True)]
+        [string]$ComputerName,
+        [Parameter(Position=2,Mandatory=$True)]
+        [PSCredential]$Credential
+    )
+    Invoke-Command -ComputerName $ComputerName -Credential $Credential -ScriptBlock ${Function:Finalize} 
 }
 
 
@@ -148,5 +174,6 @@ Function Invoke-Optimize() {
     Invoke-Command -ComputerName $ComputerName -Credential $Credential -ScriptBlock ${Function:Optimize} 
    
 }
+Export-ModuleMember -Function "Invoke-Finalize"
 Export-ModuleMember -Function "Invoke-Optimize"
 Export-ModuleMember -Function "Invoke-CloudbaseInit"
