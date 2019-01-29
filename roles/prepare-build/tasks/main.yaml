@@ -4,7 +4,5 @@
 
 - name: Check for repo updates
   win_shell: pushd {{GitRepoPath}}; git pull
-  register: repo
 
 - include_tasks: create_secondary.yml
-  when: repo.changed

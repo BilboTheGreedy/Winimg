@@ -1,6 +1,5 @@
 output-hyperv-iso/
 packer_cache/
-bin/
 iso/
 *.exe
 *.retry

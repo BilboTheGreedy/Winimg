@@ -2,9 +2,6 @@
   set_fact:
     os_selection: "{{os_version}}{{os_edition}}"
 
-- name: Check for repo updates
-  win_shell: pushd {{GitRepoPath}}; git pull
-
 - name: Clean build path
   win_file:
     path: "{{GitRepoPath}}\\build\\{{os_selection}}"

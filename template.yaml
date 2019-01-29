@@ -2,15 +2,16 @@
 - name: template
   hosts: hyperv
   gather_facts: no
+  var: 
+    HostConfig: false
   vars_files:
     - vars/global_vars.yml
     - vars/autounattend_setup.yml
     - vars/windows_iso.yml
   roles:
-
-#    - role: prepare-host
+    - role: prepare-host
 #    - role: prepare-packer
-#    - role: windows-iso
+    - role: windows-iso
     - role: prepare-build
     - role: build-image
 #    - role: upload-image
