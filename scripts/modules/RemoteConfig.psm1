@@ -115,9 +115,12 @@ Function Finalize() {
     ##Remove windows updates downloads
     Remove-Item -Path "C:\Windows\SoftwareDistribution\Download\*" -Recurse -Force -Confirm:$false
     Get-EventLog -LogName * | ForEach { Clear-EventLog $_.Log } 
-    $ScriptBlock = 'Unregister-ScheduledTask -TaskName "sysprep-shutdown" -Confirm:$false;C:\Windows\System32\Sysprep\Sysprep.exe /generalize /oobe /shutdown /unattend:"C:\Program Files\Cloudbase Solutions\Cloudbase-Init\conf\Unattend.xml"'
+    $ScriptBlock = '
+    Unregister-ScheduledTask -TaskName "sysprep" -Confirm
+    $false;C:\Windows\System32\Sysprep\Sysprep.exe /generalize /oobe /shutdown /unattend:"C:\Program Files\Cloudbase Solutions\Cloudbase-Init\conf\Unattend.xml"
+    '
     $opt = New-ScheduledJobOption -RunElevated
-    Register-ScheduledJob -ScriptBlock $ScriptBlock -Name "sysprep-shutdown" -ScheduledJobOption $opt -RunNow | Out-Null
+    Register-ScheduledJob -ScriptBlock $ScriptBlock -Name "sysprep" -ScheduledJobOption $opt -RunNow | Out-Null
 }
 
 Function Invoke-Finalize() {
