@@ -42,8 +42,15 @@ vars set in cloudbase_vars.yml
 ## Image Process 
 
 #### Overview
-1. Create disk dynamic to {{OutputPath}}{{os_selection}}
-2. Create new G2 VM with 4G ram, select NATSwitch and VHDX created in step 1
+
+##### Prepare Build
+1. Template autounattend.xml
+2. Template cloudbase-int.conf
+3. Add startup script
+4. Create secondary iso
+##### Build Image
+1. Create dynamic disk in path: {{OutputPath}}{{os_selection}}
+2. Create new G2 VM, select NATSwitch and VHDX created in step 1
 3. Add Windows ISO & Secondary ISO
 4. Boot VM
 5. Wait for Boot
@@ -51,13 +58,18 @@ vars set in cloudbase_vars.yml
 7. Wait for OS install completion
 8. Get VM adapter IP
 9. Wait for System to be ready - bootstrap.ps1
-10. Run Windows Update
-11. Download & Install latest Cloudbase-init. Find and copy config from Secondary.iso
-12. Clean up image with dism
-13. Finalize & Sysprep with cloudbase-init unattend.
-14. Remove VM. Clean up & Compact disk
-15. Convert disk qemu-img (Optional)
-16. Upload disk for QA
+##### Online Operations
+1. Run Windows Update
+2. Download & Install latest Cloudbase-init. Find and copy config from Secondary.iso
+3. Clean up image with dism
+4. Finalize & Sysprep with cloudbase-init unattend.
+##### Offline Operations
+1. Remove VM. Clean up & Compact disk
+##### Convert Image (Optional)
+1. Convert disk qemu-img & add virtio drivers (Optional)
+##### Upload Image
+1. Upload disk for QA
+2. ?
 
 ## PS Modules
 Since we are working with double hop, modules for certain tasks can help enable remote functionality/automation of guests on build hosts.
@@ -68,5 +80,5 @@ Since we are working with double hop, modules for certain tasks can help enable 
 
 
 ### RemoteWindowsUpdate.psm1
-This module will run a series of complex powershell jobs on the build host to update target Guest with latest Windows Updates. It will retry untill a "true" response is given. When true, all updates found is installed.*
+This module will run a series of complex powershell jobs on the build host to update target Guest with latest Windows Updates. It will retry/Reboot untill a "true" response is given. When true, all updates found is installed.*
 * "Invoke-WindowsUpdate" 
