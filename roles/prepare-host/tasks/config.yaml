@@ -1,42 +1,62 @@
+- name: Check Config
+  win_shell: |
+    $config = @{}
+    foreach ($path in $env:Path) { if ($path -like "*git*") {$config.Add("Git", $True)}else {$config.Add("Git", $False)} }
+    $config.Add("Hyperv", (Get-WindowsFeature -Name "Hyper-v").installed)
+    $config.Add("Dhcp", (Get-WindowsFeature -Name "DHCP").installed)
+    foreach ($switch in Get-VMSwitch) { if ($switch.Name -eq "NATSwitch") {$config.Add("Switch", $True)}else {$config.Add("Switch", $False)} }
+    $config | ConvertTo-Json
+  register: config
+- name: fact
+  set_fact:
+    config: "{{ config.stdout | from_json }}"
 - name: Download git-client
   win_get_url:
     url: https://github.com/git-for-windows/git/releases/download/v2.20.1.windows.1/Git-2.20.1-64-bit.exe
     dest: C:\Windows\Temp
+  when: config.Git == False
 - name: install git-client
   raw: 'C:\Windows\Temp\Git-2.20.1-64-bit.exe /SILENT /COMPONENTS="icons,ext\reg\shellhere,assoc,assoc_sh"'
+  when: config.Git == False
 - name: Install Hyper-v
   win_feature:
     include_management_tools: "yes"
     include_sub_features: "yes"    
     name: Hyper-v
     state: present
+  when: config.Hyperv == False
 - name: Instal DHCP
   win_feature:
     include_management_tools: "yes"
     include_sub_features: "yes"    
     name: DHCP
     state: present
+  when: config.Dhcp == False
 - name: "Rebooting"
   win_reboot:
     reboot_timeout_sec: 1800
     connect_timeout_sec: 1800
+  when: config.Hyperv == False
 - name: Wait 600 seconds for target connection to become reachable/usable
   wait_for_connection:
     delay: "60"
     timeout: "600"
+  when: config.Hyperv == False
 - name: Configure DHCP Server
   win_shell: |
     Set-ItemProperty –Path registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\ServerManager\Roles\12 –Name ConfigurationState –Value 2
     Add-DhcpServerv4Scope -name "NATScope" -StartRange 192.168.0.2 -EndRange 192.168.0.200 -SubnetMask 255.255.255.0 -State Active
     Set-DhcpServerv4OptionValue -OptionID 3 -Value 192.168.0.1 -ScopeID 192.168.0.0
     Set-DhcpServerv4OptionValue -DnsServer 192.168.1.1
+  when: config.Dhcp == False
 - name: Configure Internal Network
   win_shell: |
     New-VMSwitch -SwitchName "NATSwitch" -SwitchType Internal
     New-NetIPAddress -IPAddress 192.168.0.1 -PrefixLength 24 -InterfaceAlias "vEthernet (NATSwitch)"
     New-NetNAT -Name "NATNetwork" -InternalIPInterfaceAddressPrefix  192.168.0.0/24
+  when: config.Switch == False
 - name: Set Winrm to trust all hosts
   win_shell: winrm s winrm/config/client '@{TrustedHosts="*"}'
 
-- name: Clone Packer Config
+- name: Clone Git Repo
   win_shell: if (!(Test-Path -Path {{GitRepoPath}})) {git clone {{GitRepo}} {{GitRepoPath}}}

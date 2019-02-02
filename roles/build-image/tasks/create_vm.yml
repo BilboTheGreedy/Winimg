@@ -1,7 +1,7 @@
 - name: Create VM
   win_shell: | 
     New-VHD -Path {{OutputPath}}{{os_selection}}.vhdx -Dynamic -SizeBytes 30GB | Out-Null
-    New-VM -Name {{os_selection}} -MemoryStartupBytes 4096MB -Generation 2 -SwitchName NATSwitch -VHDPath {{OutputPath}}{{os_selection}}.vhdx | Out-Null
+    New-VM -Name {{os_selection}} -MemoryStartupBytes 2048MB -Generation 2 -SwitchName NATSwitch -VHDPath {{OutputPath}}{{os_selection}}.vhdx | Out-Null
     Set-VM -Name {{os_selection}} -ProcessorCount 4
     Add-VMDvdDrive -VMName {{os_selection}} -ControllerNumber 0 -ControllerLocation 1 | Out-Null
     Set-VMDvdDrive -VMName {{os_selection}} -ControllerNumber 0 -ControllerLocation 1 -Path {{ISOPath}}{{os_iso}} | Out-Null
@@ -34,7 +34,7 @@
 - name: Get VM IP
   win_shell: (Get-VM {{os_selection}} | Select -ExpandProperty NetworkAdapters | Select IPAddresses).IPAddresses[0]
   until: vmip.stdout.find("192.168.0") != -1
-  retries: 30
+  retries: 60
   delay: 60
   register: vmip
   ignore_errors: true

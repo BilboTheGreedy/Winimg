@@ -1,0 +1,23 @@
+virtio_drivers:
+  win2012r2:
+    - \viostor\2k12R2\amd64
+    - \vioserial\2k12R2\amd64
+    - \vioscsi\2k12R2\amd64
+    - \viorng\2k12R2\amd64
+    - \vioinput\2k12R2\amd64
+    - \qxldod\2k12R2\amd64
+    - \qemupciserial\2k12R2\amd64
+    - \pvpanic\2k12R2\amd64
+    - \NetKVM\2k12R2\amd64
+    - \Balloon\2k12R2\amd64
+  win2016:
+    - \viostor\2k16\amd64
+    - \vioserial\2k16\amd64
+    - \vioscsi\2k16\amd64
+    - \viorng\2k16\amd64
+    - \vioinput\2k16\amd64
+    - \qxldod\2k16\amd64
+    - \qemupciserial\2k16\amd64
+    - \pvpanic\2k16\amd64
+    - \NetKVM\2k16\amd64
+    - \Balloon\2k16\amd64

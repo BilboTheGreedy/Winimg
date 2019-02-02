@@ -1,4 +1,4 @@
-#Defaults for all
+#Defaults for all - used by other plays besides templating
 AdministratorPassword: "Pa$$W0rd"
 
 #Specific

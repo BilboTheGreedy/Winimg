@@ -1,3 +1,5 @@
+- name: load vars
+  include_vars: vars/windows_iso.yml
 - name: get list of isos
   set_fact:
     list_iso: "{{ windows_iso.win2012r2 }} + {{ windows_iso.win2016 }}"
@@ -9,7 +11,7 @@
   win_get_url:
     url: "{{http_fileserver}}{{ item }}"
     dest: "{{ISOPath}}{{item}}"
-    force: no
+    force: "no"
   loop: "{{ list_iso }}"
   when: http_fileserver != 'skip'
 

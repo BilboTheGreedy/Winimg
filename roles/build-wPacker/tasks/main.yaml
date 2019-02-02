@@ -1,9 +1,0 @@
-- name: get list of isos
-  set_fact:
-    os_img: "{{windows_iso[os_version]| first}}"
-
-- name: Run Packer
-  win_shell: |
-    $hash = (Get-FileHash -Path C:\iso\{{os_img}} -Algorithm MD5).Hash
-    pushd C:\packer
-    .\packer build -force -var 'iso_url=../iso/{{os_img}}' -var "iso_checksum=$hash" -var "os_edition={{ os_edition }}" hyperv.json

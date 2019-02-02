@@ -1,6 +1,7 @@
-- name: Set os_selection fact
-  set_fact:
-    os_selection: "{{os_version}}{{os_edition}}"
+- name: load vars
+  include_vars: vars/autounattend_setup.yml
+- name: cb vars
+  include_vars: vars/cloudbase_vars.yml
 
 - name: Check for repo updates
   win_shell: pushd {{GitRepoPath}}; git pull

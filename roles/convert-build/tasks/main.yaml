@@ -1,0 +1,44 @@
+- name: load vars
+  include_vars: 
+    file: vars/virtio_vars.yml
+
+- name: Download virtio
+  win_get_url:
+    url: https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/stable-virtio/virtio-win.iso
+    dest: "{{OutputPath}}"
+    force: "no"
+
+- name: Make Temporary Copy of vhdx
+  win_shell: Copy-Item "{{OutputPath}}{{os_version}}{{os_edition}}.vhdx" -Destination "{{OutputPath}}{{os_version}}{{os_edition}}-kvm.vhdx"
+
+- name: Mount Virtio
+  win_shell: (Mount-DiskImage {{OutputPath}}virtio-win.iso -PassThru | Get-Volume).DriveLetter
+  register: virtio
+- name: Mount Image
+  win_shell: (Mount-VHD -Path {{OutputPath}}{{os_version}}{{os_edition}}-kvm.vhdx -PassThru | Get-Disk | Get-Partition | Get-Volume | Where-Object {$_.FileSystemLabel -like "Windows"}).DriveLetter
+  register: disk
+
+- name: virtio 
+  debug:
+    var: virtio.stdout_lines.0
+
+- name: disk 
+  debug:
+    var: disk.stdout_lines.0
+- name: Add Virtio Drivers
+  win_shell: Add-WindowsDriver -Path {{disk.stdout_lines.0}}:\ -Driver {{virtio.stdout_lines.0}}:{{item}} -Recurse | out-null ; write-output "adding {{item}}"
+  loop: "{{ virtio_drivers[os_version] }}"
+
+- name: Dismount virtio
+  win_shell: Dismount-DiskImage {{OutputPath}}virtio-win.iso
+
+- name: Dismount Image
+  win_shell: dismount-vhd -path {{OutputPath}}{{os_version}}{{os_edition}}-kvm.vhdx -confirm:$false
+
+- name: Convert Image
+  win_shell: "{{GitRepoPath}}\\bin\\qemu-img.exe convert -f vhdx -O raw {{OutputPath}}{{os_version}}{{os_edition}}-kvm.vhdx {{OutputPath}}{{os_version}}{{os_edition}}-kvm.raw"
+
+- name: Remove Temporary Image
+  win_file:
+    path: "{{OutputPath}}{{os_version}}{{os_edition}}-kvm.vhdx"
+    state: absent
