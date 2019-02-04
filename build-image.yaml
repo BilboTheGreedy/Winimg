@@ -2,8 +2,8 @@
 - name: template
   hosts: hyperv
   gather_facts: no
-  vars: 
-    HostConfig: false
+  vars:
+    convert: false
   vars_files:
     - vars/global_vars.yml
   roles:
@@ -12,6 +12,7 @@
     - role: prepare-build
     - role: build-image
     - role: convert-build
+      when: convert == true
 #    - role: upload-image
       
     

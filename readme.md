@@ -66,7 +66,9 @@ vars set in cloudbase_vars.yml
 ##### Offline Operations
 1. Remove VM. Clean up & Compact disk
 ##### Convert Image (Optional)
-1. Convert disk qemu-img & add virtio drivers (Optional)
+1. Create temporary clone of image
+2. add virtio drivers & Convert disk qemu-img
+3. Clean up temporary image
 ##### Upload Image
 1. Upload disk for QA
 2. ?
