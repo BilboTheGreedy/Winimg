@@ -1,4 +1,4 @@
-[hyperv]
+[hyperv-build]
 192.168.1.75
 
 [hyperv:vars]
