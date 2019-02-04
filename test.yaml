@@ -1,5 +1,5 @@
 ---
-- name: template
+- name: test
   hosts: hyperv
   gather_facts: no
   vars: 
