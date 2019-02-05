@@ -1,9 +1,9 @@
 ---
-- name: template
+- name: Build Image
   hosts: hyperv-build
   gather_facts: no
   vars:
-    HostConfig: false
+    HostConfig: true
     convert: false
   vars_files:
     - vars/global_vars.yml

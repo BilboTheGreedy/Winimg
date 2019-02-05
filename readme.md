@@ -8,6 +8,7 @@
 * Install Windows Server 2016
 * Download and run [ConfigureRemotingForAnsible.ps1](https://github.com/ansible/ansible/blob/devel/examples/scripts/ConfigureRemotingForAnsible.ps1)
 * Configure any extra disks/volumes to be used
+* Create directory specified by GitRepoPath var and add /scripts/modules/*.psm1 and /bin directory
 
 ### Apply Configuration
 Run playbook "prepare-host". This will do a couple of things
