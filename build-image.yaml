@@ -4,7 +4,7 @@
   gather_facts: no
   vars:
     HostConfig: true
-    convert: false
+    convert: true 
   vars_files:
     - vars/global_vars.yml
   roles:

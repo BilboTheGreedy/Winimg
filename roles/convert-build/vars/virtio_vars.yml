@@ -21,3 +21,14 @@ virtio_drivers:
     - \pvpanic\2k16\amd64
     - \NetKVM\2k16\amd64
     - \Balloon\2k16\amd64
+  win2019:
+    - \viostor\2k16\amd64
+    - \vioserial\2k16\amd64
+    - \vioscsi\2k16\amd64
+    - \viorng\2k16\amd64
+    - \vioinput\2k16\amd64
+    - \qxldod\2k16\amd64
+    - \qemupciserial\2k16\amd64
+    - \pvpanic\2k16\amd64
+    - \NetKVM\2k16\amd64
+    - \Balloon\2k16\amd64
