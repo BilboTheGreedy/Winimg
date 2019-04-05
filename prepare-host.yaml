@@ -1,8 +1,8 @@
 ---
 - name: Host Setup
-  hosts: hyperv
+  hosts: hyperv-build
   gather_facts: no
-  vars: 
+  vars:
     HostConfig: true
   vars_files:
     - vars/global_vars.yml

@@ -2,7 +2,7 @@
   include_vars: vars/windows_iso.yml
 - name: get list of isos
   set_fact:
-    list_iso: "{{ windows_iso.win2012r2 }} + {{ windows_iso.win2016 }}"
+    list_iso: "{{ windows_iso.win2012r2 }} + {{ windows_iso.win2016 }} + {{ windows_iso.win2019 }}"
 - name: Create directory structure
   win_file:
     path: "{{ISOPath}}"

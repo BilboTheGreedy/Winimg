@@ -4,6 +4,6 @@
   include_vars: vars/cloudbase_vars.yml
 
 - name: Check for repo updates
-  win_shell: pushd {{GitRepoPath}}; git pull
+  win_shell: pushd {{GitRepoPath}}; git pull --rebase
 
 - include_tasks: create_secondary.yml

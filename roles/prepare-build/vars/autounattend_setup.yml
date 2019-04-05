@@ -1,5 +1,5 @@
 #Defaults for all - used by other plays besides templating
-AdministratorPassword: "Pa$$W0rd"
+AdministratorPassword: "PassW0rd"
 
 #Specific
 autounattend_setup:
@@ -14,4 +14,10 @@ autounattend_setup:
     image_index: 2
   win2016dc:
     product_key: "CB7KF-BWN84-R7R2Y-793K2-8XDDG"
+    image_index: 4
+  win2019std:
+    product_key: "N69G4-B89J2-4G8F4-WWYCC-J464C"
+    image_index: 2
+  win2019dc:
+    product_key: "WMDGN-G9PQG-XVVXX-R3X43-63DFG"
     image_index: 4
