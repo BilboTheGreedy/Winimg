@@ -3,6 +3,7 @@
     New-VHD -Path {{OutputPath}}{{os_selection}}.vhdx -Dynamic -SizeBytes 30GB | Out-Null
     New-VM -Name {{os_selection}} -MemoryStartupBytes 2048MB -Generation 2 -SwitchName NATSwitch -VHDPath {{OutputPath}}{{os_selection}}.vhdx | Out-Null
     Set-VM -Name {{os_selection}} -ProcessorCount 4
+    Set-VMFirmware -VMName {{os_selection}} -EnableSecureBoot Off
     Add-VMDvdDrive -VMName {{os_selection}} -ControllerNumber 0 -ControllerLocation 1 | Out-Null
     Set-VMDvdDrive -VMName {{os_selection}} -ControllerNumber 0 -ControllerLocation 1 -Path {{ISOPath}}{{os_iso}} | Out-Null
     Add-VMDvdDrive -VMName {{os_selection}} -ControllerNumber 0 -ControllerLocation 2 | Out-Null

@@ -39,7 +39,7 @@
   win_shell: "{{GitRepoPath}}\\bin\\qemu-img.exe convert -f vhdx -O raw {{OutputPath}}{{os_version}}{{os_edition}}-kvm.vhdx {{OutputPath}}{{os_version}}{{os_edition}}-kvm.raw"
 
 - name: Convert Image vmware
-  win_shell: "{{GitRepoPath}}\\bin\\qemu-img.exe convert {{OutputPath}}{{os_version}}{{os_edition}}.vhdx -O vmdk {{OutputPath}}{{os_version}}{{os_edition}}.vmdk"
+  win_shell: "{{GitRepoPath}}\\bin\\qemu-img.exe convert {{OutputPath}}{{os_version}}{{os_edition}}.vhdx -O vmdk -o adapter_type=lsilogic,subformat=streamOptimized,compat6 {{OutputPath}}{{os_version}}{{os_edition}}.vmdk"
 
 - name: Remove Temporary Image
   win_file:
