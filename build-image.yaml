@@ -1,6 +1,6 @@
 ---
 - name: Build Image
-  hosts: hyperv-build
+  hosts: hyperv
   gather_facts: no
   vars:
     HostConfig: true
@@ -8,7 +8,7 @@
   vars_files:
     - vars/global_vars.yml
   roles:
-    - role: prepare-host
+#    - role: prepare-host
     - role: windows-iso
     - role: prepare-build
     - role: build-image

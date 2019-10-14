@@ -25,6 +25,7 @@
 - name: disk 
   debug:
     var: disk.stdout_lines.0
+    
 - name: Add Virtio Drivers
   win_shell: Add-WindowsDriver -Path {{disk.stdout_lines.0}}:\ -Driver {{virtio.stdout_lines.0}}:{{item}} -Recurse | out-null ; write-output "adding {{item}}"
   loop: "{{ virtio_drivers[os_version] }}"

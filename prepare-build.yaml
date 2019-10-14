@@ -6,13 +6,10 @@
     HostConfig: false
   vars_files:
     - vars/global_vars.yml
-    - vars/autounattend_setup.yml
-    - vars/cloudbase_vars.yml
-    - vars/windows_iso.yml
-    
 
   roles:
-    - role: convert-build
+    - role: windows-iso
+    - role: prepare-build
 
       
     

@@ -1,4 +1,6 @@
 GitRepo: https://github.com/BilboTheGreedy/test
-GitRepoPath: F:\setup
+GitRepoPath: C:\setup
 ISOPath: C:\iso\
-OutputPath: F:\
+OutputPath: C:\out\
+
+buildNetwork: 172.17.137
