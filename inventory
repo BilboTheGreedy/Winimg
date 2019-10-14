@@ -1,5 +1,5 @@
 [hyperv]
-172.17.137.65
+192.168.0.1
 
 [hyperv:vars]
 ansible_user=administrator
