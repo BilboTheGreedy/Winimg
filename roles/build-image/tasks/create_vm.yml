@@ -33,7 +33,7 @@
 
 - name: Get VM IP
   win_shell: (Get-VM {{os_selection}} | Select -ExpandProperty NetworkAdapters | Select IPAddresses).IPAddresses[0]
-  until: vmip.stdout.find("{{ buildNetwork }}") != -1
+  until: vmip.stdout.find("172.") != -1
   retries: 60
   delay: 60
   register: vmip
