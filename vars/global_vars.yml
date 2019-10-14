@@ -3,4 +3,4 @@ GitRepoPath: C:\setup
 ISOPath: C:\iso\
 OutputPath: C:\out\
 
-buildNetwork: 172.17.137
+buildNetwork: 172.
