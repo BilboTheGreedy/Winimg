@@ -4,7 +4,7 @@
   gather_facts: no
   vars:
     HostConfig: true
-    convert: true 
+    convert: false 
   vars_files:
     - vars/global_vars.yml
   roles:
@@ -13,7 +13,7 @@
     - role: prepare-build
     - role: build-image
     - role: convert-build
-      when: convert == true
+      when: convert == true | bool
 #    - role: upload-image
       
     
