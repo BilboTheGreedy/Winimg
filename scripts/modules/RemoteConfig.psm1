@@ -83,7 +83,7 @@ Function Finalize() {
     #Sysprep
     $ScriptBlock = {
         Unregister-ScheduledTask -TaskName "sysprep" -Confirm:$false
-        C:\Windows\System32\Sysprep\Sysprep.exe /generalize /oobe /shutdown /unattend:"C:\Program Files\Cloudbase Solutions\Cloudbase-Init\conf\Unattend.xml"
+        C:\Windows\System32\Sysprep\Sysprep.exe /generalize /shutdown /unattend:"C:\Program Files\Cloudbase Solutions\Cloudbase-Init\conf\Unattend.xml"
     }
     $opt = New-ScheduledJobOption -RunElevated
     Register-ScheduledJob -ScriptBlock $ScriptBlock -Name "sysprep" -ScheduledJobOption $opt -RunNow
