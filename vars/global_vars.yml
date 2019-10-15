@@ -3,4 +3,5 @@ GitRepoPath: C:\setup
 ISOPath: C:\iso\
 OutputPath: C:\out\
 
+vSwitch: NATSwitch
 buildNetwork: 172.
