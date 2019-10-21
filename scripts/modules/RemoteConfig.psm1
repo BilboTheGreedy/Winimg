@@ -83,7 +83,12 @@ Function Finalize() {
     #Sysprep
     $ScriptBlock = {
         Unregister-ScheduledTask -TaskName "sysprep" -Confirm:$false
-        Get-PSDrive -PSProvider FileSystem | % {if ((test-path ($_.root+"\unattend.xml")) -eq $true){$ua=$_.root+"\unattend.xml";C:\Windows\System32\Sysprep\Sysprep.exe /generalize /oobe /shutdown /unattend:$ua }}
+        Get-PSDrive -PSProvider FileSystem | % {
+            if ((test-path ($_.root+"\unattend.xml")) -eq $true){
+                    $ua=$_.root+"\unattend.xml"
+                    C:\Windows\System32\Sysprep\Sysprep.exe /generalize /oobe /shutdown /unattend:$ua 
+                }
+            }
     }
     $opt = New-ScheduledJobOption -RunElevated
     Register-ScheduledJob -ScriptBlock $ScriptBlock -Name "sysprep" -ScheduledJobOption $opt -RunNow
