@@ -1,8 +1,8 @@
 [hyperv-build]
-192.168.1.75
+172.20.35.134
 
 [hyperv-build:vars]
-ansible_user=administrator
-ansible_password=!PassW0rd
+ansible_user=root
+ansible_password=Logon123!
 ansible_connection=winrm
 ansible_winrm_server_cert_validation=ignore

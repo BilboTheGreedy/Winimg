@@ -1,18 +1,18 @@
 ---
 - name: test
-  hosts: hyperv
+  hosts: hyperv-build
   gather_facts: no
   vars: 
     HostConfig: false
   vars_files:
     - vars/global_vars.yml
-    - vars/autounattend_setup.yml
-    - vars/cloudbase_vars.yml
-    - vars/windows_iso.yml
-    
-
-  roles:
-    - role: convert-build
-
-      
-    
+  tasks:
+    - name: Set VM IP
+      win_shell: |
+        New-PSSession -VMName win2019std -Credential (New-Object System.Management.Automation.PSCredential ('Administrator', (ConvertTo-SecureString 'PassW0rd' -AsPlainText -Force))) -Name win2019std
+        Invoke-command -scriptblock {New-Netipaddress -InterfaceIndex (Get-NetAdapter).ifIndex -IpAddress 192.168.0.16;New-NetRoute -ifIndex (Get-NetAdapter).ifIndex -DestinationPrefix 0.0.0.0/0 -NextHop 192.168.0.1;Set-DnsClientServerAddress -InterfaceIndex (Get-NetAdapter).ifIndex -ServerAddresses 1.1.1.1} -Session (Get-PSSession -Name win2019std)
+      register: netip_result
+      retries: 30
+      delay: 60
+      ignore_errors: true
+      until: netip_result.rc == 0 

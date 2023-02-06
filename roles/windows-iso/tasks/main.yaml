@@ -7,12 +7,3 @@
   win_file:
     path: "{{ISOPath}}"
     state: directory
-- name: Download windows iso(s)
-  win_get_url:
-    url: "{{http_fileserver}}{{ item }}"
-    dest: "{{ISOPath}}{{item}}"
-    force: "no"
-  loop: "{{ list_iso }}"
-  when: http_fileserver != 'skip'
-
- 

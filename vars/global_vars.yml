@@ -1,4 +1,4 @@
 GitRepo: https://github.com/BilboTheGreedy/test
-GitRepoPath: F:\setup
+GitRepoPath: C:\GitRepo\Winimg\
 ISOPath: C:\iso\
-OutputPath: F:\
+OutputPath: C:\out\
