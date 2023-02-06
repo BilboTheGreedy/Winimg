@@ -39,7 +39,7 @@
   retries: 30
   delay: 60
   ignore_errors: true
-  until: netip_result.rc == 0 
+  until: result.rc == 0 
 
 - name: Get VM IP
   win_shell: (Get-VM {{os_selection}} | Select -ExpandProperty NetworkAdapters | Select IPAddresses).IPAddresses[0]
@@ -48,9 +48,9 @@
   delay: 60
   register: vmip
   ignore_errors: true
-  until: result.rc == 0
+  until: vmip.rc == 0
 
-- name: set fact
+- name: set IP fact
   set_fact:
     vm_ip: "{{ vmip.stdout_lines | first }}"
 
